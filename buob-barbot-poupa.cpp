@@ -17,7 +17,8 @@ void generateFromFile(t_graphe * target);
 void afficheCompletGraphe(t_graphe * target);
 void afficheMatriceAdjacente(t_graphe * target);
 void afficheMatriceIncidence(t_graphe * target);
-void transitive(t_graphe * original, t_graphe * target);
+t_graphe* transitive(t_graphe * original, t_graphe * target);
+bool aUnCircuit(t_graphe * matriceTransitive);
 
 
 void generateMatriceVide(t_graphe * target, int nbSommets){
@@ -29,9 +30,9 @@ void generateMatriceVide(t_graphe * target, int nbSommets){
             target->MAdj[s][extTerm] = false;
         }
     }
-    
+
     target->MVal = new int * [target->nbSommets];
-    
+
     for (int s = 0; s < target->nbSommets; s++) {
         target->MVal[s] = new int [target->nbSommets];
         for (int extTerm = 0; extTerm < target->nbSommets; extTerm++) {
@@ -43,17 +44,17 @@ void generateMatriceVide(t_graphe * target, int nbSommets){
 void generateFromFile(t_graphe * target){
     // Lecture du graphe sur fichier
     ifstream fg (FICHIER_GRAPHE);
-    
+
     int nbSommets;
-    
+
     // Lecture du nombre de sommets et allocation dynamique des SdD
     fg >> nbSommets;
-    
+
     generateMatriceVide(target, nbSommets);
-    
+
     // Lecture des arcs
     int extInit, extTerm, valeur;
-    
+
     fg >> extInit;
     while (extInit != -1) {
         fg >> extTerm;
@@ -97,12 +98,12 @@ void afficheCompletGraphe(t_graphe * target){
     afficheMatriceIncidence(target);
 }
 
-void transitive(t_graphe * original, t_graphe * target){
+t_graphe* transitive(t_graphe * original, t_graphe * target){
     t_graphe * m = new t_graphe;
-    
+
     generateMatriceVide(m, original->nbSommets);
     generateMatriceVide(target, original->nbSommets);
-    
+
     for(int n = 2; n <= original->nbSommets - 1; n++){
         for (int i = 0; i < m->nbSommets; i++) {
             for(int j = 0; j < m->nbSommets; j++){
@@ -116,10 +117,10 @@ void transitive(t_graphe * original, t_graphe * target){
                 }
             }
         }
-        
+
         cout << "m^" << n <<" : " << endl;
         afficheMatriceAdjacente(m);
-        
+
         for (int i = 0; i < m->nbSommets; i++){
             for(int j = 0; j < m->nbSommets; j ++){
                 if(n == 2){
@@ -130,10 +131,29 @@ void transitive(t_graphe * original, t_graphe * target){
                 }
             }
         }
-        
+
         cout << "transitive pour n=" << n << " : " << endl;
         afficheMatriceAdjacente(target);
     }
+
+    return target;
+}
+
+bool aUnCircuit(t_graphe * matriceTransitive)
+{
+    for (int i = 0 ; i < matriceTransitive->nbSommets ; i++)
+    {
+        if (matriceTransitive->MAdj[i][i] == true)
+        {
+            // On a un 1 sur la diagonale: pas de circuit et on sort
+            cout << "Le graphe n'a pas de circuit" << endl;
+            return false;
+        }
+    }
+
+    // Si on n'est pas sorti jusque là, il y a un circuit
+    cout << "Le graphe a un circuit" << endl;
+    return true;
 }
 
 int main () {
@@ -141,16 +161,19 @@ int main () {
     t_graphe * G = new t_graphe;
 
     generateFromFile(G);
-    
+
     cout << "original: " << endl;
-    
+
     afficheMatriceAdjacente(G);
-    
+
     //afficheCompletGraphe(G);
 
     t_graphe * t = new t_graphe;
-    
-    transitive(G, t);
-    
+
+    // TODO: pointeurs?
+    G = transitive(G, t);
+
+    aUnCircuit(G);
+
     return 1;
 }
