@@ -1,6 +1,7 @@
 .idea/
 .DS_Store
 Build/
+mini-projet/
 mini-projet.xcodeproj
 mini-projet.build
 DerivedData/
