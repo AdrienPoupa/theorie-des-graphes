@@ -1,0 +1,11 @@
+.idea/
+.DS_Store
+Build/
+mini-projet.xcodeproj
+mini-projet.build
+DerivedData/
+bin/
+obj/
+mini-projet.cbp
+mini-projet.depend
+mini-projet.layout
