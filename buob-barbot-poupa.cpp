@@ -32,6 +32,7 @@ int dateAuPlusTot(t_graphe * graphe, int sommet, map<int, int> dureeSommet);
 void calendrierAuPlusTot(t_graphe * graphe, map<int, int> dureeSommet);
 int dateAuPlusTard(t_graphe * graphe, int sommet, map<int, int> dureeSommet);
 void calendrierAuPlusTard(t_graphe * graphe, map<int, int> dureeSommet);
+bool validation(t_graphe * graphe);
 
 
 void generateMatriceVide(t_graphe * target, int nbSommets){
@@ -444,12 +445,99 @@ void calendrierAuPlusTard(t_graphe * graphe, map<int, int> dureeSommet){
     }
 }
 
+bool validation(t_graphe * graphe)
+{
+    // a) 1 seul point d'entrée
+    map<int, int> aretesEntrantes = map<int, int>();
+
+    for (int x = 0; x < graphe->nbSommets; x++) {
+        aretesEntrantes[x] = 0;
+    }
+
+    for (int i = 0 ; i < graphe->nbSommets ; i++)
+    {
+        for (int j = 0 ; j < graphe->nbSommets ; j++)
+        {
+            if (graphe->MAdj[i][j] == true)
+            {
+                aretesEntrantes[j]++;
+            }
+        }
+    }
+
+    int compteurEntrees = 0;
+
+    for (int x = 0; x < graphe->nbSommets; x++) {
+        if (aretesEntrantes[x] == 0) // Si on n'a que des 0 sur une colonne, c'est une entrée
+            compteurEntrees++;
+    }
+
+    if (compteurEntrees == 0)
+    {
+        cout << "Erreur : Il n'y a pas d'entree" << endl;
+        return false;
+    }
+    else if (compteurEntrees > 1)
+    {
+        cout << "Erreur : Il y a " << compteurEntrees << " entrees" << endl;
+        return false;
+    }
+
+
+    // b) 1 seul point de sortie
+    map<int, int> aretesSortantes = map<int, int>();
+
+    for (int x = 0; x < graphe->nbSommets; x++) {
+        aretesSortantes[x] = 0;
+    }
+
+    for (int i = 0 ; i < graphe->nbSommets ; i++)
+    {
+        for (int j = 0 ; j < graphe->nbSommets ; j++)
+        {
+            if (graphe->MAdj[j][i] == true)
+            {
+                aretesSortantes[j]++;
+            }
+        }
+    }
+
+    int compteurSorties = 0;
+
+    for (int x = 0; x < graphe->nbSommets; x++) {
+        if (aretesSortantes[x] == 0) // Si on n'a que des 0 sur une ligne, c'est une sortie
+            compteurSorties++;
+    }
+
+    if (compteurSorties == 0)
+    {
+        cout << "Erreur : Il n'y a pas de sortie" << endl;
+        return false;
+    }
+    else if (compteurSorties > 1)
+    {
+        cout << "Erreur : Il y a " << compteurSorties << " sorties" << endl;
+        return false;
+    }
+
+    // c) Pas de circuit
+    bool circuit = aUnCircuit(graphe);
+
+    if (circuit == true)
+    {
+        cout << "Erreur : Le graphe a un circuit" << endl;
+        return false;
+    }
+
+    return true;
+}
+
 int main ()
 {
     // Déclaration graphe
     t_graphe * G = new t_graphe;
-
-    /*cout << "Generation a partir du fichier" << endl;
+/*
+    cout << "Generation a partir du fichier" << endl;
     generateFromFile(G);
 
     cout << "Matrice adjacente originale :" << endl;
@@ -478,7 +566,9 @@ int main ()
     }
 
     cout << "Rang" << endl;
-    affichageRang(rang(G));*/
+    affichageRang(rang(G));
+
+    validation(G);*/
 
     map<int, int> dureeSommet;
     cout << "Generation a partir du fichier" << endl;
