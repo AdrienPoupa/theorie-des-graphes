@@ -112,6 +112,85 @@ void generateFromFile(t_graphe * target){
     }
 }
 
+void generateFromFileTask(t_graphe * target){
+    // Lecture du graphe sur fichier
+    ifstream fg (FICHIER_GRAPHE);
+
+    int nbSommets;
+
+    // Lecture du nombre de sommets et allocation dynamique des SdD
+    fg >> nbSommets;
+    nbSommets += 2;
+    cout << "Nombre sommets: " << nbSommets - 2 << " + 2 (0 et " << nbSommets - 1 <<")"  << endl;
+
+    generateMatriceVide(target, nbSommets);
+
+    // Lecture des arcs
+    int extInit, contrainte, duree;
+
+    // Initialisation des contraintes
+    set<int> contrainteList = set<int>();
+    map<int, int> extInitDuree = map<int, int>();
+
+    for (int i = 1; i < nbSommets-1; i++)
+    {
+        contrainteList.insert(i);
+    }
+
+    // ATTENTION: les contraintes et init démarrent à 1 dans le fichier, 0 dans la matrice
+
+    // lecture du nom du sommet
+    fg >> extInit;
+    if (extInit != -1)
+    {
+        cout << "sommet: " << extInit;
+        while (extInit != -1)
+        {
+            fg >> duree;
+            cout << ", duree: " << duree;
+            extInitDuree[extInit] = duree;
+            fg >> contrainte;
+            int cCount = 0;
+            cout <<  ", contrainte: ";
+            while (contrainte != -1)
+            {
+                contrainteList.erase(contrainte);
+                target->MAdj[contrainte][extInit] = true;
+                cout << (cCount != 0 ? ", ": "") << contrainte;
+                cCount++;
+                fg >> contrainte;
+            }
+            if(contrainte == -1 && cCount == 0)
+            {
+                cout << "Pas de contraintes ...";
+                target->MAdj[0][extInit] = true;
+                target->MVal[0][extInit] = 0;
+            }
+            cout << endl;
+
+            fg >> extInit;
+            if (extInit != -1)
+            {
+                cout << "sommet: " << extInit;
+            }
+
+        }
+    }
+    for(auto const elem: contrainteList){
+        target->MAdj[elem][nbSommets-1] = true;
+        target->MVal[elem][nbSommets-1] = 0;
+    }
+
+
+    for(int i = 0; i < nbSommets; i++){
+        for(int j = 0; j < nbSommets; j++){
+            if(target->MAdj[i][j]){
+                target->MVal[i][j] = extInitDuree[i];
+            }
+        }
+    }
+}
+
 void afficheMatriceAdjacente(t_graphe * target){
     for (int x = 0; x < target->nbSommets; x++) {
         cout << x << "\t";
@@ -224,7 +303,7 @@ map<int, int> demiDegreAdjacent(t_graphe * graphe){
 
 int findFirstWhereEntier(map<int, int> m, int v){
     for(auto const elem: m){
-        if(elem.second == 0) return elem.first;
+        if(elem.second == v) return elem.first;
     }
     return -1;
 }
@@ -266,7 +345,7 @@ void rang(t_graphe * graphe)
         sommet = findFirstWhereEntier(aretesEntrantes, 0);
 
         if(sommet != -1){
-            cout << "sommet : "<< sommetRealname[sommet] + 1 << " , rang : " << rangIte << endl;
+            cout << "sommet : "<< sommetRealname[sommet] << " , rang : " << rangIte << endl;
 
             bool found = false;
             for(int n = 0; n < graphe->nbSommets; n++){
@@ -296,7 +375,7 @@ int main ()
     // Déclaration graphe
     t_graphe * G = new t_graphe;
 
-    cout << "Generation a partir du fichier" << endl;
+    /*cout << "Generation a partir du fichier" << endl;
     generateFromFile(G);
 
     cout << "Matrice adjacente originale :" << endl;
@@ -325,7 +404,16 @@ int main ()
     }
 
     cout << "Rang" << endl;
-    rang(G);
+    rang(G);*/
+
+    cout << "Generation a partir du fichier" << endl;
+    generateFromFileTask(G);
+
+//    cout << "Matrice adjacente originale :" << endl;
+//    afficheMatriceAdjacente(G);
+
+    cout << "Matrice complete :" << endl;
+    afficheCompletGraphe(G);
 
     return 1;
 }
