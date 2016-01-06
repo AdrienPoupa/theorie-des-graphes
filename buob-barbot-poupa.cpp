@@ -1,4 +1,7 @@
 #include <iostream>
+#include <map>
+#include <set>
+#include <vector>
 
 using namespace std;
 
@@ -14,6 +17,7 @@ typedef struct {
 
 void generateMatriceVide(t_graphe * target, int nbSommets);
 void generateFromFile(t_graphe * target);
+void copieGraphe(t_graphe * original, t_graphe * copie);
 void afficheCompletGraphe(t_graphe * target);
 void afficheMatriceAdjacente(t_graphe * target);
 void afficheMatriceIncidence(t_graphe * target);
@@ -37,6 +41,49 @@ void generateMatriceVide(t_graphe * target, int nbSommets){
         target->MVal[s] = new int [target->nbSommets];
         for (int extTerm = 0; extTerm < target->nbSommets; extTerm++) {
             target->MVal[s][extTerm] = 0;
+        }
+    }
+}
+
+void copieGraphe(t_graphe * original, t_graphe * copie){
+
+    copie->nbSommets = original->nbSommets;
+
+    copie->MAdj = new bool * [copie->nbSommets];
+    copie->MVal = new int * [copie->nbSommets];
+
+    for (int i = 0; i < copie->nbSommets; i++) {
+        copie->MAdj[i] = new bool [copie->nbSommets];
+        copie->MVal[i] = new int [copie->nbSommets];
+        for (int j = 0; j < copie->nbSommets; j++) {
+            copie->MAdj[i][j] = original->MAdj[i][j];
+            copie->MVal[i][j] = original->MVal[i][j];
+        }
+    }
+}
+
+void copieGrapheAvecSuppressionSommet(t_graphe * original, t_graphe * copie, int sommet){
+
+    copie->nbSommets = original->nbSommets - 1;
+
+    copie->MAdj = new bool * [copie->nbSommets];
+    copie->MVal = new int * [copie->nbSommets];
+
+    int comptJ = 0, comptI = 0;
+
+    for (int i = 0; i < original->nbSommets; i++) {
+        if(i != sommet){
+            comptJ = 0;
+            copie->MAdj[comptI] = new bool [copie->nbSommets];
+            copie->MVal[comptI] = new int [copie->nbSommets];
+            for (int j = 0; j < original->nbSommets; j++) {
+                if(j != sommet){
+                    copie->MAdj[comptI][comptJ] = original->MAdj[i][j];
+                    copie->MVal[comptI][comptJ] = original->MVal[i][j];
+                    comptJ++;
+                }
+            }
+            comptI++;
         }
     }
 }
@@ -154,15 +201,93 @@ bool aUnCircuit(t_graphe * matriceTransitive)
     return false;
 }
 
+map<int, int> demiDegreAdjacent(t_graphe * graphe){
+    map<int, int> aretesEntrantes = map<int, int>();
+
+    for (int x = 0; x < graphe->nbSommets; x++) {
+        aretesEntrantes[x] = 0;
+    }
+
+    for (int i = 0 ; i < graphe->nbSommets ; i++)
+    {
+        for (int j = 0 ; j < graphe->nbSommets ; j++)
+        {
+            if (graphe->MAdj[i][j] == true)
+            {
+                aretesEntrantes[j]++;
+            }
+        }
+    }
+
+    return aretesEntrantes;
+}
+
+int findFirstWhereEntier(map<int, int> m, int v){
+    for(auto const elem: m){
+        if(elem.second == 0) return elem.first;
+    }
+    return -1;
+}
+
 void rang(t_graphe * graphe)
 {
     bool circuit = aUnCircuit(graphe);
+    t_graphe * workGraphe = new t_graphe();
+    t_graphe * tempGraphe = new t_graphe();
+
+    copieGraphe(graphe, workGraphe);
 
     if (circuit == true)
     {
         // Si le graphe a un circuit, on sort
         cout << "Erreur : le graphe a un circuit" << endl;
         return;
+    }
+
+    map<int, int> rangSommets = map<int, int>();
+    int rangIte = 0;
+    map<int, int> aretesEntrantes;
+    int sommet = 0;
+
+    int sommetRealname[graphe->nbSommets];
+
+    for(int n = 0; n < graphe->nbSommets; n++){
+        sommetRealname[n] = n;
+    }
+
+    while(sommet >= 0){
+        aretesEntrantes = demiDegreAdjacent(workGraphe);
+
+//        for (auto const n: aretesEntrantes)
+//        {
+//            cout << n.first << " : " << n.second << endl;
+//        }
+        // selection du sommet a traiter (retirer)
+        sommet = findFirstWhereEntier(aretesEntrantes, 0);
+
+        if(sommet != -1){
+            cout << "sommet : "<< sommetRealname[sommet] + 1 << " , rang : " << rangIte << endl;
+
+            bool found = false;
+            for(int n = 0; n < graphe->nbSommets; n++){
+                if(n == sommet){
+                    found = true;
+                }
+                if(found){
+                    sommetRealname[n] = n == graphe->nbSommets - 1 ? 0 : sommetRealname[n+1];
+                }
+            }
+
+            rangSommets[sommet] = rangIte;
+            rangIte++;
+
+            // supprimer ligne et colonne du sommet dans la matrice
+            copieGrapheAvecSuppressionSommet(workGraphe, tempGraphe, sommet);
+
+            delete workGraphe;
+            workGraphe = tempGraphe;
+            tempGraphe = new t_graphe();
+        }
     }
 }
 
@@ -184,11 +309,11 @@ int main ()
 
     // TODO: pointeurs?
     cout << "Transitivite :" << endl;
-    G = transitive(G, t);
+    transitive(G, t);
 
     // TODO: trace?
     cout << "Circuit :" << endl;
-    bool circuit = aUnCircuit(G);
+    bool circuit = aUnCircuit(t);
 
     if (circuit == true)
     {
