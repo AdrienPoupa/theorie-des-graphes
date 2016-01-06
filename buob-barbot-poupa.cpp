@@ -132,7 +132,7 @@ t_graphe* transitive(t_graphe * original, t_graphe * target){
             }
         }
 
-        cout << "transitive pour n=" << n << " : " << endl;
+        cout << "transitive pour n = " << n << " : " << endl;
         afficheMatriceAdjacente(target);
     }
 
@@ -146,23 +146,35 @@ bool aUnCircuit(t_graphe * matriceTransitive)
         if (matriceTransitive->MAdj[i][i] == true)
         {
             // On a un 1 sur la diagonale: il y a un circuit et on sort
-            cout << "Le graphe a un circuit" << endl;
             return true;
         }
     }
 
     // Si on n'est pas sorti jusque là, il y a un circuit
-    cout << "Le graphe n'a pas de circuit" << endl;
     return false;
 }
 
-int main () {
+void rang(t_graphe * graphe)
+{
+    bool circuit = aUnCircuit(graphe);
+
+    if (circuit == true)
+    {
+        // Si le graphe a un circuit, on sort
+        cout << "Erreur : le graphe a un circuit" << endl;
+        return;
+    }
+}
+
+int main ()
+{
     // Déclaration graphe
     t_graphe * G = new t_graphe;
 
+    cout << "Generation a partir du fichier" << endl;
     generateFromFile(G);
 
-    cout << "original: " << endl;
+    cout << "Matrice adjacente originale :" << endl;
 
     afficheMatriceAdjacente(G);
 
@@ -171,10 +183,24 @@ int main () {
     t_graphe * t = new t_graphe;
 
     // TODO: pointeurs?
+    cout << "Transitivite :" << endl;
     G = transitive(G, t);
 
     // TODO: trace?
-    aUnCircuit(G);
+    cout << "Circuit :" << endl;
+    bool circuit = aUnCircuit(G);
+
+    if (circuit == true)
+    {
+        cout << "Le graphe a un circuit" << endl;
+    }
+    else
+    {
+        cout << "Le graphe n'a pas de circuit" << endl;
+    }
+
+    cout << "Rang" << endl;
+    rang(G);
 
     return 1;
 }
