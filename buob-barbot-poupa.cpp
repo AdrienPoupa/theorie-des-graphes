@@ -7,7 +7,7 @@ using namespace std;
 
 #include <fstream>
 
-#define FICHIER_GRAPHE "buob-barbot-poupa.txt"
+#define FICHIER_GRAPHE "buob-barbot-poupa-cours.txt"
 
 typedef struct {
     int  nbSommets;
@@ -17,12 +17,21 @@ typedef struct {
 
 void generateMatriceVide(t_graphe * target, int nbSommets);
 void generateFromFile(t_graphe * target);
+map<int, int> generateFromFileTask(t_graphe * target);
 void copieGraphe(t_graphe * original, t_graphe * copie);
 void afficheCompletGraphe(t_graphe * target);
 void afficheMatriceAdjacente(t_graphe * target);
 void afficheMatriceIncidence(t_graphe * target);
-t_graphe* transitive(t_graphe * original, t_graphe * target);
+void transitive(t_graphe * original, t_graphe * target);
 bool aUnCircuit(t_graphe * matriceTransitive);
+void affichageRang(map<int, int> rS);
+map<int, int> demiDegreAdjacent(t_graphe * graphe);
+int findFirstWhereEntier(map<int, int> m, int v);
+map<int, int> rang(t_graphe * graphe);
+int dateAuPlusTot(t_graphe * graphe, int sommet, map<int, int> dureeSommet);
+void calendrierAuPlusTot(t_graphe * graphe, map<int, int> dureeSommet);
+int dateAuPlusTard(t_graphe * graphe, int sommet, map<int, int> dureeSommet);
+void calendrierAuPlusTard(t_graphe * graphe, map<int, int> dureeSommet);
 
 
 void generateMatriceVide(t_graphe * target, int nbSommets){
@@ -112,7 +121,7 @@ void generateFromFile(t_graphe * target){
     }
 }
 
-void generateFromFileTask(t_graphe * target){
+map<int, int> generateFromFileTask(t_graphe * target){
     // Lecture du graphe sur fichier
     ifstream fg (FICHIER_GRAPHE);
 
@@ -189,6 +198,8 @@ void generateFromFileTask(t_graphe * target){
             }
         }
     }
+
+    return extInitDuree;
 }
 
 void afficheMatriceAdjacente(t_graphe * target){
@@ -224,7 +235,7 @@ void afficheCompletGraphe(t_graphe * target){
     afficheMatriceIncidence(target);
 }
 
-t_graphe* transitive(t_graphe * original, t_graphe * target){
+void transitive(t_graphe * original, t_graphe * target){
     t_graphe * m = new t_graphe;
 
     generateMatriceVide(m, original->nbSommets);
@@ -241,14 +252,6 @@ t_graphe* transitive(t_graphe * original, t_graphe * target){
                         m->MAdj[i][j] += (bool)((int)original->MAdj[i][k] * (int)m->MAdj[k][j]);
                     }
                 }
-            }
-        }
-
-        cout << "m^" << n <<" : " << endl;
-        afficheMatriceAdjacente(m);
-
-        for (int i = 0; i < m->nbSommets; i++){
-            for(int j = 0; j < m->nbSommets; j ++){
                 if(n == 2){
                     target->MAdj[i][j] = m->MAdj[i][j] || original->MAdj[i][j];
                 }
@@ -258,15 +261,15 @@ t_graphe* transitive(t_graphe * original, t_graphe * target){
             }
         }
 
+        cout << "m^" << n <<" : " << endl;
+        afficheMatriceAdjacente(m);
+
         cout << "transitive pour n = " << n << " : " << endl;
         afficheMatriceAdjacente(target);
     }
-
-    return target;
 }
 
-bool aUnCircuit(t_graphe * matriceTransitive)
-{
+bool aUnCircuit(t_graphe * matriceTransitive){
     for (int i = 0 ; i < matriceTransitive->nbSommets ; i++)
     {
         if (matriceTransitive->MAdj[i][i] == true)
@@ -308,7 +311,7 @@ int findFirstWhereEntier(map<int, int> m, int v){
     return -1;
 }
 
-void rang(t_graphe * graphe)
+map<int, int> rang(t_graphe * graphe)
 {
     bool circuit = aUnCircuit(graphe);
     t_graphe * workGraphe = new t_graphe();
@@ -316,57 +319,128 @@ void rang(t_graphe * graphe)
 
     copieGraphe(graphe, workGraphe);
 
+    map<int, int> rangSommets = map<int, int>();
+
     if (circuit == true)
     {
         // Si le graphe a un circuit, on sort
         cout << "Erreur : le graphe a un circuit" << endl;
-        return;
     }
+    else{
+        int rangIte = 0;
+        map<int, int> aretesEntrantes;
+        int sommet = 0;
 
-    map<int, int> rangSommets = map<int, int>();
-    int rangIte = 0;
-    map<int, int> aretesEntrantes;
-    int sommet = 0;
+        int sommetRealname[graphe->nbSommets];
 
-    int sommetRealname[graphe->nbSommets];
-
-    for(int n = 0; n < graphe->nbSommets; n++){
-        sommetRealname[n] = n;
-    }
-
-    while(sommet >= 0){
-        aretesEntrantes = demiDegreAdjacent(workGraphe);
-
-//        for (auto const n: aretesEntrantes)
-//        {
-//            cout << n.first << " : " << n.second << endl;
-//        }
-        // selection du sommet a traiter (retirer)
-        sommet = findFirstWhereEntier(aretesEntrantes, 0);
-
-        if(sommet != -1){
-            cout << "sommet : "<< sommetRealname[sommet] << " , rang : " << rangIte << endl;
-
-            bool found = false;
-            for(int n = 0; n < graphe->nbSommets; n++){
-                if(n == sommet){
-                    found = true;
-                }
-                if(found){
-                    sommetRealname[n] = n == graphe->nbSommets - 1 ? 0 : sommetRealname[n+1];
-                }
-            }
-
-            rangSommets[sommet] = rangIte;
-            rangIte++;
-
-            // supprimer ligne et colonne du sommet dans la matrice
-            copieGrapheAvecSuppressionSommet(workGraphe, tempGraphe, sommet);
-
-            delete workGraphe;
-            workGraphe = tempGraphe;
-            tempGraphe = new t_graphe();
+        for(int n = 0; n < graphe->nbSommets; n++){
+            sommetRealname[n] = n;
         }
+
+        while(sommet >= 0){
+            aretesEntrantes = demiDegreAdjacent(workGraphe);
+
+            // selection du sommet a traiter (retirer)
+            sommet = findFirstWhereEntier(aretesEntrantes, 0);
+
+            if(sommet != -1){
+                rangSommets[sommetRealname[sommet]] = rangIte;
+
+                // correct sommet name available
+                bool found = false;
+                for(int n = 0; n < graphe->nbSommets; n++){
+                    if(n == sommet){
+                        found = true;
+                    }
+                    if(found){
+                        sommetRealname[n] = (n == graphe->nbSommets - 1 ? 0 : sommetRealname[n+1]);
+                    }
+                }
+
+                rangIte++;
+
+                // supprimer ligne et colonne du sommet dans la matrice
+                copieGrapheAvecSuppressionSommet(workGraphe, tempGraphe, sommet);
+
+                delete workGraphe;
+                workGraphe = tempGraphe;
+                tempGraphe = new t_graphe();
+            }
+        }
+    }
+
+    return rangSommets;
+}
+
+void affichageRang(map<int, int> rS){
+    for(auto const elem: rS){
+        cout << "sommet : "<< elem.first << " , rang : " << elem.second << endl;
+    }
+}
+
+int dateAuPlusTot(t_graphe * graphe, int sommet, map<int, int> dureeSommet){
+    // date au plus tot = max(date au plus tot predecesseurs + duree predecesseur)
+    // chercher sommets predecesseurs
+    set<int> pred = set<int>();
+    for(int i = 0; i < graphe->nbSommets; i++){
+        if(graphe->MAdj[i][sommet])
+            pred.insert(i);
+    }
+    // selectionner le max de datePred
+    set<int> datePred = set<int>();
+    for(auto const elem: pred){
+        datePred.insert(dureeSommet[elem] + dateAuPlusTot(graphe, elem, dureeSommet));
+    }
+    if(datePred.empty())
+        return 0;
+    else
+        return *datePred.rbegin(); // rbegin = dernier élément
+}
+
+void calendrierAuPlusTot(t_graphe * graphe, map<int, int> dureeSommet){
+    map<int, int> rangS = rang(graphe);
+    affichageRang(rangS);
+    map<int, int> datesSommet = map<int, int>();
+    // pour chaque sommet, on calcule sa date au plus tot
+    for(auto const elem: rangS){
+        datesSommet[elem.first] = dateAuPlusTot(graphe, elem.first, dureeSommet);
+    }
+
+    for(auto const elem: datesSommet){
+        cout << "sommet: " << elem.first << ", date au plus tot : " << elem.second << endl;
+    }
+
+}
+
+int dateAuPlusTard(t_graphe * graphe, int sommet, map<int, int> dureeSommet){
+    // date au plus tard = min(dateAuPlusTard(successeurs)) - dureeSommet[sommet]
+    // on cherche les successeur
+    set<int> succ = set<int>();
+    for(int i = 0; i < graphe->nbSommets; i++){
+        if(graphe->MAdj[sommet][i]) succ.insert(i);
+    }
+    // selectionner le min de succ
+    set<int> dateSucc = set<int>();
+    for(auto const elem: succ){
+        dateSucc.insert(dateAuPlusTard(graphe, elem, dureeSommet) - dureeSommet[sommet]);
+    }
+    if(dateSucc.empty())
+        return dateAuPlusTot(graphe, sommet, dureeSommet);
+    else
+        return *dateSucc.begin();
+}
+
+void calendrierAuPlusTard(t_graphe * graphe, map<int, int> dureeSommet){
+    map<int, int> rangS = rang(graphe);
+    affichageRang(rangS);
+    map<int, int> datesSommet = map<int, int>();
+    // pour chaque sommet, on calcul sa date au plus tard
+    for(auto const elem: rangS){
+        datesSommet[elem.first] = dateAuPlusTard(graphe, elem.first, dureeSommet);
+    }
+
+    for(auto const elem: datesSommet){
+        cout << "sommet: " << elem.first << ", date au plus tard : " << elem.second << endl;
     }
 }
 
@@ -404,16 +478,20 @@ int main ()
     }
 
     cout << "Rang" << endl;
-    rang(G);*/
+    affichageRang(rang(G));*/
 
+    map<int, int> dureeSommet;
     cout << "Generation a partir du fichier" << endl;
-    generateFromFileTask(G);
+    dureeSommet = generateFromFileTask(G);
 
 //    cout << "Matrice adjacente originale :" << endl;
 //    afficheMatriceAdjacente(G);
 
     cout << "Matrice complete :" << endl;
     afficheCompletGraphe(G);
+
+    calendrierAuPlusTot(G, dureeSommet);
+    calendrierAuPlusTard(G, dureeSommet);
 
     return 1;
 }
