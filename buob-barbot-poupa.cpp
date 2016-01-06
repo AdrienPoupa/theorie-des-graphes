@@ -145,15 +145,15 @@ bool aUnCircuit(t_graphe * matriceTransitive)
     {
         if (matriceTransitive->MAdj[i][i] == true)
         {
-            // On a un 1 sur la diagonale: pas de circuit et on sort
-            cout << "Le graphe n'a pas de circuit" << endl;
-            return false;
+            // On a un 1 sur la diagonale: il y a un circuit et on sort
+            cout << "Le graphe a un circuit" << endl;
+            return true;
         }
     }
 
     // Si on n'est pas sorti jusque là, il y a un circuit
-    cout << "Le graphe a un circuit" << endl;
-    return true;
+    cout << "Le graphe n'a pas de circuit" << endl;
+    return false;
 }
 
 int main () {
@@ -173,6 +173,7 @@ int main () {
     // TODO: pointeurs?
     G = transitive(G, t);
 
+    // TODO: trace?
     aUnCircuit(G);
 
     return 1;
