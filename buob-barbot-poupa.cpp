@@ -7,7 +7,7 @@ using namespace std;
 
 #include <fstream>
 
-#define FICHIER_GRAPHE "buob-barbot-poupa-cours.txt"
+#define FICHIER_GRAPHE "buob-barbot-poupa-rang-simple.txt"
 
 typedef struct {
     int  nbSommets;
@@ -22,7 +22,7 @@ void copieGraphe(t_graphe * original, t_graphe * copie);
 void afficheCompletGraphe(t_graphe * target);
 void afficheMatriceAdjacente(t_graphe * target);
 void afficheMatriceIncidence(t_graphe * target);
-void transitive(t_graphe * original, t_graphe * target);
+void transitive(t_graphe * original, t_graphe * target, bool display = false);
 bool aUnCircuit(t_graphe * matriceTransitive);
 void affichageRang(map<int, int> rS);
 map<int, int> demiDegreAdjacent(t_graphe * graphe);
@@ -236,7 +236,7 @@ void afficheCompletGraphe(t_graphe * target){
     afficheMatriceIncidence(target);
 }
 
-void transitive(t_graphe * original, t_graphe * target){
+void transitive(t_graphe * original, t_graphe * target, bool display){
     t_graphe * m = new t_graphe;
 
     generateMatriceVide(m, original->nbSommets);
@@ -262,11 +262,14 @@ void transitive(t_graphe * original, t_graphe * target){
             }
         }
 
-        cout << "m^" << n <<" : " << endl;
-        afficheMatriceAdjacente(m);
+        if (display)
+        {
+            cout << "m^" << n <<" : " << endl;
+            afficheMatriceAdjacente(m);
 
-        cout << "transitive pour n = " << n << " : " << endl;
-        afficheMatriceAdjacente(target);
+            cout << "transitive pour n = " << n << " : " << endl;
+            afficheMatriceAdjacente(target);
+        }
     }
 }
 
@@ -465,11 +468,14 @@ bool validation(t_graphe * graphe)
         }
     }
 
-    int compteurEntrees = 0;
+    int compteurEntrees = 0, entree;
 
     for (int x = 0; x < graphe->nbSommets; x++) {
         if (aretesEntrantes[x] == 0) // Si on n'a que des 0 sur une colonne, c'est une entrée
+        {
             compteurEntrees++;
+            entree = x; // On crée une variable contenant le numéro de l'entrée pour d)
+        }
     }
 
     if (compteurEntrees == 0)
@@ -502,11 +508,14 @@ bool validation(t_graphe * graphe)
         }
     }
 
-    int compteurSorties = 0;
+    int compteurSorties = 0, sortie;
 
     for (int x = 0; x < graphe->nbSommets; x++) {
         if (aretesSortantes[x] == 0) // Si on n'a que des 0 sur une ligne, c'est une sortie
+        {
             compteurSorties++;
+            sortie = x; // On crée une variable contenant le numéro de la sortie pour d)
+        }
     }
 
     if (compteurSorties == 0)
@@ -520,6 +529,9 @@ bool validation(t_graphe * graphe)
         return false;
     }
 
+    /*cout << "Entree : " << entree << endl;
+    cout << "Sortie : " << sortie << endl;*/
+
     // c) Pas de circuit
     bool circuit = aUnCircuit(graphe);
 
@@ -529,6 +541,33 @@ bool validation(t_graphe * graphe)
         return false;
     }
 
+    // d) Il existe un chemin du point d’entrée à tout autre sommet
+    // Création du graphe temporaire
+    t_graphe * t = new t_graphe;
+    // t reçoit la matrice d'adjacence du graphe transitif
+    transitive(graphe, t, false);
+    // On vérifie qu'on a bien true sur la ligne d'entree (sauf lui-même) pour avoir d)
+    for (int i = 0 ; i < t->nbSommets ; i++)
+    {
+        if (t->MAdj[entree][i] == false && i != entree)
+        {
+            cout << "Erreur : Il n'existe pas un chemin du point d'entree a tout autre sommet" << endl;
+            return false;
+        }
+    }
+
+    // e) Il existe un chemin de n’importe quel sommet au point de sortie
+    // On vérifie qu'on a bien true sur la colonne de sortie (sauf lui-même) pour avoir e)
+    for (int i = 0 ; i < t->nbSommets ; i++)
+    {
+        if (t->MAdj[i][sortie] == false && i != sortie)
+        {
+            cout << "Erreur : Il n'existe pas un chemin de n'importe quel sommet au point de sortie" << endl;
+            return false;
+        }
+    }
+
+    // Rien n'a été retourné jusque-là ? Le graphe est validé s!
     return true;
 }
 
@@ -536,7 +575,7 @@ int main ()
 {
     // Déclaration graphe
     t_graphe * G = new t_graphe;
-/*
+
     cout << "Generation a partir du fichier" << endl;
     generateFromFile(G);
 
@@ -550,7 +589,7 @@ int main ()
 
     // TODO: pointeurs?
     cout << "Transitivite :" << endl;
-    transitive(G, t);
+    transitive(G, t, true);
 
     // TODO: trace?
     cout << "Circuit :" << endl;
@@ -568,8 +607,13 @@ int main ()
     cout << "Rang" << endl;
     affichageRang(rang(G));
 
-    validation(G);*/
+    bool valide = validation(G);
 
+    if (valide)
+    {
+        cout << "Le graphe a ete valide" << endl;
+    }
+/*
     map<int, int> dureeSommet;
     cout << "Generation a partir du fichier" << endl;
     dureeSommet = generateFromFileTask(G);
@@ -581,7 +625,7 @@ int main ()
     afficheCompletGraphe(G);
 
     calendrierAuPlusTot(G, dureeSommet);
-    calendrierAuPlusTard(G, dureeSommet);
+    calendrierAuPlusTard(G, dureeSommet);*/
 
     return 1;
 }
