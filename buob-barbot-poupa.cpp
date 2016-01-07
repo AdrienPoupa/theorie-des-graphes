@@ -29,9 +29,9 @@ map<int, int> demiDegreAdjacent(t_graphe * graphe);
 int findFirstWhereEntier(map<int, int> m, int v);
 map<int, int> rang(t_graphe * graphe);
 int dateAuPlusTot(t_graphe * graphe, int sommet, map<int, int> dureeSommet);
-void calendrierAuPlusTot(t_graphe * graphe, map<int, int> dureeSommet);
+map<int, int> calendrierAuPlusTot(t_graphe * graphe, map<int, int> dureeSommet);
 int dateAuPlusTard(t_graphe * graphe, int sommet, map<int, int> dureeSommet);
-void calendrierAuPlusTard(t_graphe * graphe, map<int, int> dureeSommet);
+map<int, int> calendrierAuPlusTard(t_graphe * graphe, map<int, int> dureeSommet);
 bool validation(t_graphe * graphe);
 
 
@@ -401,7 +401,7 @@ int dateAuPlusTot(t_graphe * graphe, int sommet, map<int, int> dureeSommet){
         return *datePred.rbegin(); // rbegin = dernier élément
 }
 
-void calendrierAuPlusTot(t_graphe * graphe, map<int, int> dureeSommet){
+map<int, int> calendrierAuPlusTot(t_graphe * graphe, map<int, int> dureeSommet){
     map<int, int> rangS = rang(graphe);
     affichageRang(rangS);
     map<int, int> datesSommet = map<int, int>();
@@ -413,7 +413,7 @@ void calendrierAuPlusTot(t_graphe * graphe, map<int, int> dureeSommet){
     for(auto const elem: datesSommet){
         cout << "sommet: " << elem.first << ", date au plus tot : " << elem.second << endl;
     }
-
+    return datesSommet;
 }
 
 int dateAuPlusTard(t_graphe * graphe, int sommet, map<int, int> dureeSommet){
@@ -434,7 +434,7 @@ int dateAuPlusTard(t_graphe * graphe, int sommet, map<int, int> dureeSommet){
         return *dateSucc.begin();
 }
 
-void calendrierAuPlusTard(t_graphe * graphe, map<int, int> dureeSommet){
+map<int, int> calendrierAuPlusTard(t_graphe * graphe, map<int, int> dureeSommet){
     map<int, int> rangS = rang(graphe);
     affichageRang(rangS);
     map<int, int> datesSommet = map<int, int>();
@@ -446,6 +446,7 @@ void calendrierAuPlusTard(t_graphe * graphe, map<int, int> dureeSommet){
     for(auto const elem: datesSommet){
         cout << "sommet: " << elem.first << ", date au plus tard : " << elem.second << endl;
     }
+    return datesSommet;
 }
 
 // Récupération d'un set<int> de sorties
