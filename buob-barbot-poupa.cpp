@@ -448,6 +448,37 @@ void calendrierAuPlusTard(t_graphe * graphe, map<int, int> dureeSommet){
     }
 }
 
+// Récupération d'un set<int> de sorties
+set<int> sortieGraphe(t_graphe * graphe)
+{
+    map<int, int> aretesSortantes = map<int, int>();
+    set<int> sorties = set<int>();
+
+    for (int x = 0; x < graphe->nbSommets; x++) {
+        aretesSortantes[x] = 0;
+    }
+
+    for (int i = 0 ; i < graphe->nbSommets ; i++)
+    {
+        for (int j = 0 ; j < graphe->nbSommets ; j++)
+        {
+            if (graphe->MAdj[j][i] == true)
+            {
+                aretesSortantes[j]++;
+            }
+        }
+    }
+
+    for (int x = 0; x < graphe->nbSommets; x++) {
+        if (aretesSortantes[x] == 0) // Si on n'a que des 0 sur une ligne, c'est une sortie
+        {
+            sorties.insert(x);
+        }
+    }
+
+    return sorties;
+}
+
 bool validation(t_graphe * graphe)
 {
     cout << "Validation du graphe" << endl;
