@@ -7,7 +7,7 @@ using namespace std;
 
 #include <fstream>
 
-#define FICHIER_GRAPHE "buob-barbot-poupa-rang-simple.txt"
+#define FICHIER_GRAPHE "buob-barbot-poupa-rang.txt"
 
 typedef struct {
     int  nbSommets;
@@ -450,6 +450,10 @@ void calendrierAuPlusTard(t_graphe * graphe, map<int, int> dureeSommet){
 
 bool validation(t_graphe * graphe)
 {
+    cout << "Validation du graphe" << endl;
+
+    bool valide = true;
+
     // a) 1 seul point d'entrée
     map<int, int> aretesEntrantes = map<int, int>();
 
@@ -480,13 +484,17 @@ bool validation(t_graphe * graphe)
 
     if (compteurEntrees == 0)
     {
-        cout << "Erreur : Il n'y a pas d'entree" << endl;
-        return false;
+        cout << "a) Erreur : Il n'y a pas d'entree" << endl;
+        valide = false;
     }
     else if (compteurEntrees > 1)
     {
-        cout << "Erreur : Il y a " << compteurEntrees << " entrees" << endl;
-        return false;
+        cout << "a) Erreur : Il y a " << compteurEntrees << " entrees" << endl;
+        valide = false;
+    }
+    else
+    {
+        cout << "a) Il y a bien une unique entree" << endl;
     }
 
 
@@ -520,13 +528,17 @@ bool validation(t_graphe * graphe)
 
     if (compteurSorties == 0)
     {
-        cout << "Erreur : Il n'y a pas de sortie" << endl;
-        return false;
+        cout << "b) Erreur : Il n'y a pas de sortie" << endl;
+        valide = false;
     }
     else if (compteurSorties > 1)
     {
-        cout << "Erreur : Il y a " << compteurSorties << " sorties" << endl;
-        return false;
+        cout << "b) Erreur : Il y a " << compteurSorties << " sorties" << endl;
+        valide = false;
+    }
+    else
+    {
+        cout << "b) Il y a bien une unique sortie" << endl;
     }
 
     /*cout << "Entree : " << entree << endl;
@@ -537,11 +549,16 @@ bool validation(t_graphe * graphe)
 
     if (circuit == true)
     {
-        cout << "Erreur : Le graphe a un circuit" << endl;
-        return false;
+        cout << "c) Erreur : Le graphe a un circuit" << endl;
+        valide = false;
+    }
+    else
+    {
+        cout << "c) Il n'y a pas de circuit" << endl;
     }
 
     // d) Il existe un chemin du point d’entrée à tout autre sommet
+    bool dValide = true;
     // Création du graphe temporaire
     t_graphe * t = new t_graphe;
     // t reçoit la matrice d'adjacence du graphe transitif
@@ -551,24 +568,37 @@ bool validation(t_graphe * graphe)
     {
         if (t->MAdj[entree][i] == false && i != entree)
         {
-            cout << "Erreur : Il n'existe pas un chemin du point d'entree a tout autre sommet" << endl;
-            return false;
+            cout << "d) Erreur : Il n'existe pas un chemin du point d'entree a tout autre sommet" << endl;
+            valide = dValide = false;
+            break;
         }
     }
 
+    if (dValide)
+    {
+        cout << "d) Il y a bien un chemin du point d'entree a tout autre sommet" << endl;
+    }
+
     // e) Il existe un chemin de n’importe quel sommet au point de sortie
+    bool eValide = true;
     // On vérifie qu'on a bien true sur la colonne de sortie (sauf lui-même) pour avoir e)
     for (int i = 0 ; i < t->nbSommets ; i++)
     {
         if (t->MAdj[i][sortie] == false && i != sortie)
         {
-            cout << "Erreur : Il n'existe pas un chemin de n'importe quel sommet au point de sortie" << endl;
-            return false;
+            cout << "e) Erreur : Il n'existe pas un chemin de n'importe quel sommet au point de sortie" << endl;
+            valide = eValide = false;
+            break;
         }
     }
 
-    // Rien n'a été retourné jusque-là ? Le graphe est validé s!
-    return true;
+    if (eValide)
+    {
+        cout << "e) Il y a bien un chemin de n'importe quel sommet au point de sortie" << endl;
+    }
+
+    // Rien n'a été retourné jusque-là ? Le graphe est validé !
+    return valide;
 }
 
 int main ()
@@ -612,6 +642,10 @@ int main ()
     if (valide)
     {
         cout << "Le graphe a ete valide" << endl;
+    }
+    else
+    {
+        cout << "Le graphe n'a pas ete valide" << endl;
     }
 /*
     map<int, int> dureeSommet;
