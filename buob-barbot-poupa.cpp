@@ -3,7 +3,7 @@
 #include <set>
 #include <vector>
 #include <fstream>
-#define FICHIER_GRAPHE "buob-barbot-poupa-original.txt"
+#define FICHIER_GRAPHE "buob-barbot-poupa-rang.txt"
 
 using namespace std;
 
@@ -239,20 +239,51 @@ map<int, int> generateFromFileTask(t_graphe * target) {
 
 // Affichage de la matrice adjacente
 void afficheMatriceAdjacente(t_graphe * target) {
+    /*
+        Jusqu'à 10, on peur avoir un bel affichage condensé avec le nom des sommets
+        Au dela, on n'a plus le nom des sommets
+    */
 
-    cout << "\t\t" << endl;
-    for (int x = 0; x < target->nbSommets; x++) {
-        cout << x << "\t";
+    for (int x = -1; x < target->nbSommets; x++) {
+        if (x == -1)
+        {
+            cout << "  ";
+        }
+        else
+        {
+            if (x < 10)
+            {
+                cout << x << " ";
+            }
+            else
+            {
+                cout << "+ ";
+            }
+        }
     }
     cout << endl;
 
     for (int x = 0; x < target->nbSommets; x++) {
-        cout << x << "\t";
+        if (x < 10)
+        {
+            cout << x << " ";
+        }
+        else
+        {
+            cout << "+ ";
+        }
         for (int y = 0; y < target->nbSommets; y ++) {
             if (target->MAdj[x][y] == true) {
-                cout << "X\t";
-            } else {
-                cout << "\t";
+                cout << "X";
+                if (y != target->nbSommets-1) {
+                    cout << ".";
+                }
+            }
+            else if (y == target->nbSommets-1) {
+                cout << ".";
+            }
+            else {
+                cout << "..";
             }
         }
         cout << endl;
@@ -261,15 +292,51 @@ void afficheMatriceAdjacente(t_graphe * target) {
 
 // Affichage de la matrice d'incidence
 void afficheMatriceIncidence(t_graphe * target) {
+    /*
+        Jusqu'à 10, on peur avoir un bel affichage condensé avec le nom des sommets
+        Au dela, on n'a plus le nom des sommets
+    */
+
+    for (int x = -1; x < target->nbSommets; x++) {
+        if (x == -1)
+        {
+            cout << "  ";
+        }
+        else
+        {
+            if (x < 10)
+            {
+                cout << x << " ";
+            }
+            else
+            {
+                cout << "+ ";
+            }
+        }
+    }
+    cout << endl;
+
     for (int x = 0; x < target->nbSommets; x++) {
-        cout << x << "\t";
+        if (x < 10)
+        {
+            cout << x << " ";
+        }
+        else
+        {
+            cout << "+ ";
+        }
         for (int y = 0; y < target->nbSommets; y ++) {
-            // Si on a un true dans la matrice d'adjence,
-            // on affiche la valeur de la matrice d'incidence
             if (target->MAdj[x][y] == true) {
-                cout << target->MVal[x][y] << "\t";
-            } else {
-                cout << "\t";
+                cout << target->MVal[x][y]; // Problème si valeur > 9 ou < 0
+                if (y != target->nbSommets-1) {
+                    cout << ".";
+                }
+            }
+            else if (y == target->nbSommets-1) {
+                cout << ".";
+            }
+            else {
+                cout << "..";
             }
         }
         cout << endl;
@@ -768,9 +835,9 @@ int main ()
 
     cout << "Matrice adjacente originale :" << endl;
 
-    afficheMatriceAdjacente(G);
+    //afficheMatriceAdjacente(G);
 
-    //afficheCompletGraphe(G);
+    afficheCompletGraphe(G);
 
     t_graphe * t = new t_graphe;
 
