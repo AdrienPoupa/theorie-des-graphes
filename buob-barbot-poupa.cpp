@@ -33,6 +33,10 @@ void calendrierAuPlusTot(t_graphe * graphe, map<int, int> dureeSommet);
 int dateAuPlusTard(t_graphe * graphe, int sommet, map<int, int> dureeSommet);
 void calendrierAuPlusTard(t_graphe * graphe, map<int, int> dureeSommet);
 bool validation(t_graphe * graphe);
+void editeur();
+void addDeleteTask(t_graphe * graphe);
+void addDeleteConstraint(t_graphe * graphe);
+void editDuration(t_graphe * graphe);
 
 
 void generateMatriceVide(t_graphe * target, int nbSommets){
@@ -186,6 +190,7 @@ map<int, int> generateFromFileTask(t_graphe * target){
 
         }
     }
+    
     for(auto const elem: contrainteList){
         target->MAdj[elem][nbSommets-1] = true;
         target->MVal[elem][nbSommets-1] = 0;
@@ -314,6 +319,8 @@ int findFirstWhereEntier(map<int, int> m, int v){
     }
     return -1;
 }
+
+
 
 map<int, int> rang(t_graphe * graphe)
 {
@@ -569,6 +576,40 @@ bool validation(t_graphe * graphe)
 
     // Rien n'a été retourné jusque-là ? Le graphe est validé s!
     return true;
+}
+
+void editeur(t_graphe * graphe){
+    // affichage menu d'options
+    int choice = -1;
+    do{
+        do{
+            cout << "Editeur: " << endl;
+            cout << "1.Ajouter/Supprimer une tâche" << endl;
+            cout << "2.Ajouter/Supprimer une contrainte" << endl;
+            cout << "3.Modifier une durée" << endl;
+            cout << "0.Ne rien faire" << endl;
+            cout << "Choix : " << endl;
+            cin >> choice;
+        }while(choice < 0 && choice > 3);
+        
+        if(choice == 0) return;
+        
+        switch(choice){
+            case 1: // ajouter/supprimer tâche
+                addDeleteTask(graphe);
+                break;
+            case 2: // ajouter/supprimer contrainte
+                addDeleteConstraint(graphe);
+                break;
+            case 3: // modifier duree tâche.
+                editDuration(graphe);
+                break;
+            default:
+                return;
+        }
+    }while(choice != 0);
+    
+    return;
 }
 
 int main ()
