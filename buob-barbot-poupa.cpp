@@ -404,7 +404,7 @@ map<int, int> calendrierAuPlusTot(t_graphe * graphe) {
     for (auto const elem: datesSommet) {
         cout << "sommet: " << elem.first << ", date au plus tot : " << elem.second << endl;
     }
-
+    
     cout << endl;
 
     return datesSommet;
