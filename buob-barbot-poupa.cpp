@@ -23,7 +23,7 @@ void addDeleteTask(t_graphe * graphe);
 void addDeleteConstraint(t_graphe * graphe);
 void afficheCompletGraphe(t_graphe * target);
 void afficheMatriceAdjacente(t_graphe * target);
-void afficheMatriceIncidence(t_graphe * target);
+void afficheMatriceValeurs(t_graphe * target);
 void affichageRang(map<int, int> rS);
 bool aUnCircuit(t_graphe * matriceTransitive);
 
@@ -120,7 +120,7 @@ void addDeleteTask(t_graphe * graphe){
 
     cout << "1. Ajout de tache" << endl;
     cout << "2. Suppression de tache" << endl;
-    cout << "Choix:" << endl;
+    cout << "Choix :" << endl;
     cin >> choixUtilisateur;
 
     if (choixUtilisateur == 1)
@@ -164,7 +164,7 @@ void addDeleteTask(t_graphe * graphe){
         else
         {
             // Pas de contraintes = entrées
-            cout << "Pas de contraintes ...";
+            cout << "Pas de contraintes ..." << endl;
         }
     }
     else
@@ -176,20 +176,93 @@ void addDeleteTask(t_graphe * graphe){
         cin >> choix;
 
         cout << "Tache a supprimer : " << choix << endl;
+
+        int nombreNouveauxSommets = graphe->nbSommets - 1;
+
+        // Création de la nouvelle matrice, copie de l'ancienne
+        generateMatriceVide(nouveauGraphe, nombreNouveauxSommets);
+        copieGrapheAvecSuppressionSommet(graphe, nouveauGraphe, choix);
     }
 
-    // Mise à jour de l'adresse
-    copieGraphe(nouveauGraphe, graphe);
+    // Mise à jour de l'adresse si le graphe est valide
+    bool grapheValide = validation(nouveauGraphe);
+
+    if (grapheValide)
+    {
+        cout << "Le graphe est valide : votre modification est enregistree" << endl;
+        copieGraphe(nouveauGraphe, graphe);
+    }
+    else
+    {
+        cout << "Votre modification entraine une corruption du graphe : elle n'est pas enregistree" << endl;
+    }
 }
 
 void addDeleteConstraint(t_graphe * graphe){
-    return;
+    int choixUtilisateur, contrainte, sommet;
+
+    t_graphe * workGraphe = new t_graphe();
+    copieGraphe(graphe, workGraphe);
+
+    cout << "Pour les sommets a contrainte unique, pensez a ajouter une nouvelle contrainte avant de la supprimer" << endl;
+    cout << "1. Ajout de contrainte" << endl;
+    cout << "2. Suppression de contrainte" << endl;
+    cout << "Choix :" << endl;
+    cin >> choixUtilisateur;
+
+    if (choixUtilisateur == 1)
+    {
+        cout << "Ajout de contrainte" << endl;
+        cout << "Saisissez la contrainte a ajouter :" << endl;
+        cin >> contrainte;
+
+        cout << "Saisissez le sommet pour cette nouvelle contrainte :" << endl;
+        cin >> sommet;
+
+        // On récupère la durée sur la colonne
+        for (int i = 0; i < workGraphe->nbSommets; i++)
+        {
+            // Si on est sur une valeur
+            if (workGraphe->MAdj[contrainte][i] == true)
+            {
+                workGraphe->MVal[contrainte][sommet] = workGraphe->MVal[contrainte][i];
+                break;
+            }
+        }
+
+        workGraphe->MAdj[contrainte][sommet] = true;
+    }
+    else
+    {
+        cout << "Suppression de contrainte" << endl;
+        cout << "Saisissez la contrainte a supprimer :" << endl;
+        cin >> contrainte;
+
+        cout << "Saisissez le sommet pour cette suppression :" << endl;
+        cin >> sommet;
+
+        workGraphe->MAdj[contrainte][sommet] = false;
+        workGraphe->MVal[contrainte][sommet] = 0;
+    }
+
+    // Mise à jour de l'adresse si le graphe est valide
+    bool grapheValide = validation(workGraphe);
+
+    if (grapheValide)
+    {
+        cout << "Le graphe est valide : votre modification est enregistree" << endl;
+        copieGraphe(workGraphe, graphe);
+    }
+    else
+    {
+        cout << "Votre modification entraine une corruption du graphe : elle n'est pas enregistree" << endl;
+    }
 }
 
-// L'affichage complet du graphe : matrices d'adjacence et d'incidence
+// L'affichage complet du graphe : matrices d'adjacence et de valeurs
 void afficheCompletGraphe(t_graphe * target) {
     afficheMatriceAdjacente(target);
-    afficheMatriceIncidence(target);
+    afficheMatriceValeurs(target);
 }
 
 // Affichage de la matrice adjacente
@@ -245,8 +318,8 @@ void afficheMatriceAdjacente(t_graphe * target) {
     }
 }
 
-// Affichage de la matrice d'incidence
-void afficheMatriceIncidence(t_graphe * target) {
+// Affichage de la matrice de valeurs
+void afficheMatriceValeurs(t_graphe * target) {
     /*
         Jusqu'à 10, on peur avoir un bel affichage condensé avec le nom des sommets
         Au dela, on n'a plus le nom des sommets
