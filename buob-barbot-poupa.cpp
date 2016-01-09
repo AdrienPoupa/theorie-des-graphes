@@ -27,11 +27,11 @@ void afficheMatriceIncidence(t_graphe * target);
 void affichageRang(map<int, int> rS);
 bool aUnCircuit(t_graphe * matriceTransitive);
 
+int calculRang(t_graphe * graphe, int sommet);
 map<int, int> calendrierAuPlusTard(t_graphe * graphe, map<int, int> dureeSommet);
 map<int, int> calendrierAuPlusTot(t_graphe * graphe, map<int, int> dureeSommet);
 void copieGraphe(t_graphe * original, t_graphe * copie);
 void copieGrapheAvecSuppressionSommet(t_graphe * original, t_graphe * copie, int sommet);
-
 
 int dateAuPlusTard(t_graphe * graphe, int sommet, map<int, int> dureeSommet);
 int dateAuPlusTot(t_graphe * graphe, int sommet, map<int, int> dureeSommet);
@@ -39,6 +39,7 @@ map<int, int> demiDegreAdjacent(t_graphe * graphe);
 
 void editDuration(t_graphe * graphe);
 void editeur(t_graphe * graphe);
+set<int> entreeGraphe(t_graphe * graphe);
 
 int findFirstWhereEntier(map<int, int> m, int v);
 
@@ -250,6 +251,25 @@ bool aUnCircuit(t_graphe * matriceTransitive) {
 
     // Si on n'est pas sorti jusque lŕ, il y a un circuit
     return false;
+}
+
+int calculRang(t_graphe * graphe, int sommet){
+    
+    set<int> pred;
+    
+    for(int i = 0; i < graphe->nbSommets; i++){
+        if(graphe->MAdj[i][sommet]){ // trouve predecesseur de sommet
+            pred.insert(calculRang(graphe, i));
+        }
+    }
+    
+    if(pred.size() == 0){
+        return 0;
+        
+    }
+    else{
+        return *pred.rbegin() + 1;
+    }
 }
 
 // Affiche le calendrier au plus tard, en se basant sur dateAuPlusTard
@@ -471,6 +491,36 @@ void editeur(t_graphe * graphe){
     }while(choice != 0);
 
     return;
+}
+
+// Récupération d'un set<int> d'entree du graphe
+set<int> entreeGraphe(t_graphe * graphe){
+    map<int, int> aretesEntrantes = map<int, int>();
+    set<int> entrees = set<int>();
+    
+    for (int x = 0; x < graphe->nbSommets; x++) {
+        aretesEntrantes[x] = 0;
+    }
+    
+    for (int i = 0 ; i < graphe->nbSommets ; i++)
+    {
+        for (int j = 0 ; j < graphe->nbSommets ; j++)
+        {
+            if (graphe->MAdj[j][i] == true)
+            {
+                aretesEntrantes[i]++;
+            }
+        }
+    }
+    
+    for (int x = 0; x < graphe->nbSommets; x++) {
+        if (aretesEntrantes[x] == 0) // Si on n'a que des 0 sur une colonne, c'est une entreee
+        {
+            entrees.insert(x);
+        }
+    }
+    
+    return entrees;
 }
 
 // Retourne le premier entier d'une map
@@ -807,66 +857,22 @@ map<int, int> rang(t_graphe * graphe){
      On insčre le rang actuel dans le map rangIte qui contient nos rangs finaux
      On doit également avoir une autre variable pour garder l'ancien nom pour l'affichage
      */
-    bool circuit = aUnCircuit(graphe);
-    t_graphe * workGraphe = new t_graphe();
-    t_graphe * tempGraphe = new t_graphe();
 
-    copieGraphe(graphe, workGraphe);
-
+    t_graphe * tmpGraphe = new t_graphe();
+    transitive(graphe, tmpGraphe, false);
+    
     // Tableau contenant le rang et l'arete associée
     map<int, int> rangSommets = map<int, int>();
 
-    if (circuit == true)
+    if (aUnCircuit(tmpGraphe))
     {
         // Si le graphe a un circuit, on sort
         cout << "Erreur : le graphe a un circuit" << endl;
     }
     else
     {
-        int rangIte = 0;
-        map<int, int> aretesEntrantes;
-        int sommet = 0;
-
-        // On garde l'ancien nom
-        int sommetRealname[graphe->nbSommets];
-
-        // Initialisation des anciens noms des sommets
-        for (int n = 0; n < graphe->nbSommets; n++) {
-            sommetRealname[n] = n;
-        }
-
-        // Tant qu'on a encore des sommets dans le map
-        while (sommet >= 0) {
-            // On récupčre la liste des sommets ŕ traiter
-            aretesEntrantes = demiDegreAdjacent(workGraphe);
-
-            // Sélection du sommet a traiter (c'est ŕ dire ŕ retirer)
-            sommet = findFirstWhereEntier(aretesEntrantes, 0);
-
-            if (sommet != -1) {
-                rangSommets[sommetRealname[sommet]] = rangIte;
-
-                bool found = false;
-                for (int n = 0; n < graphe->nbSommets; n++) {
-                    if (n == sommet) {
-                        found = true;
-                    }
-                    if (found) {
-                        // Correction du nom d'affichage : sans cela, on ne pourrait pas
-                        // dire quel sommet a été supprimé ŕ chaque itération
-                        sommetRealname[n] = (n == graphe->nbSommets - 1 ? 0 : sommetRealname[n+1]);
-                    }
-                }
-
-                rangIte++;
-
-                // Supprimer ligne et colonne du sommet dans la matrice
-                copieGrapheAvecSuppressionSommet(workGraphe, tempGraphe, sommet);
-
-                delete workGraphe;
-                workGraphe = tempGraphe;
-                tempGraphe = new t_graphe();
-            }
+        for(int i = 0; i < graphe->nbSommets; i++){
+            rangSommets[i] = calculRang(graphe, i);
         }
     }
 
