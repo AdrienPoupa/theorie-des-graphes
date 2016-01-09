@@ -64,7 +64,7 @@ bool validation(t_graphe * graphe);
 
 // MAIN
 int main(){
-    
+
     mainMenu();
 
     return 1;
@@ -101,7 +101,6 @@ void addDeleteTask(t_graphe * graphe){
 
         if (choix == "O")
         {
-            //extInitDuree[extInit] = duree;
             do
             {
                 cout << "Saisie de la contrainte, -1 pour arreter" << endl;
@@ -240,9 +239,9 @@ void afficheMatriceAdjacente(t_graphe * target) {
     cout << endl;
 
     for (int x = 0; x < target->nbSommets; x++) {
-        
+
         cout << setfill(' ') << setw(fieldSize) << x;
-        
+
         for (int y = 0; y < target->nbSommets; y ++) {
             if (target->MAdj[x][y] == true) {
                 cout << setfill(' ') << setw(fieldSize) << "X";
@@ -257,7 +256,7 @@ void afficheMatriceAdjacente(t_graphe * target) {
 
 // Affichage de la matrice de valeurs
 void afficheMatriceValeurs(t_graphe * target) {
-    
+
     int fieldSize = 4;
     for (int x = -1; x < target->nbSommets; x++) {
         if (x == -1)
@@ -270,11 +269,11 @@ void afficheMatriceValeurs(t_graphe * target) {
         }
     }
     cout << endl;
-    
+
     for (int x = 0; x < target->nbSommets; x++) {
-        
+
         cout << setfill(' ') << setw(fieldSize) << x;
-        
+
         for (int y = 0; y < target->nbSommets; y ++) {
             if (target->MAdj[x][y] == true) {
                 cout << setfill(' ') << setw(fieldSize) << target->MVal[x][y];;
