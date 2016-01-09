@@ -3,247 +3,130 @@
 #include <set>
 #include <vector>
 #include <fstream>
-#define FICHIER_GRAPHE "buob-barbot-poupa-rang.txt"
+#ifdef _WIN32
+#define SEPARATOR "\"
+#else 
+#define SEPARATOR "/"
+#endif
 
 using namespace std;
 
-// Structure utilisÈe pour nos graphes
+// Structure utilis√©e pour nos graphes
 typedef struct {
-    int  nbSommets; // Nombre de sommets (indiquÈ en premiËre ligne du .txt)
+    int  nbSommets; // Nombre de sommets (indiqu√© en premiƒçre ligne du .txt)
     bool **  MAdj; // MAdj[x][y] = TRUE <==> il existe arc (x,y)
-    int ** MVal; // Si MAdj[x][y] = TRUE alors MVal[x][y] = valeur de líarc (x,y)
+    int ** MVal; // Si MAdj[x][y] = TRUE alors MVal[x][y] = valeur de l‚Äôarc (x,y)
 } t_graphe;
 
 // Header
-void generateMatriceVide(t_graphe * target, int nbSommets);
-void generateFromFile(t_graphe * target);
-map<int, int> generateFromFileTask(t_graphe * target);
-void copieGraphe(t_graphe * original, t_graphe * copie);
+void addDeleteTask(t_graphe * graphe);
+void addDeleteConstraint(t_graphe * graphe);
 void afficheCompletGraphe(t_graphe * target);
 void afficheMatriceAdjacente(t_graphe * target);
 void afficheMatriceIncidence(t_graphe * target);
-void transitive(t_graphe * original, t_graphe * target, bool display = false);
-bool aUnCircuit(t_graphe * matriceTransitive);
 void affichageRang(map<int, int> rS);
-map<int, int> demiDegreAdjacent(t_graphe * graphe);
-int findFirstWhereEntier(map<int, int> m, int v);
-map<int, int> rang(t_graphe * graphe);
-int dateAuPlusTot(t_graphe * graphe, int sommet, map<int, int> dureeSommet);
-map<int, int> calendrierAuPlusTot(t_graphe * graphe, map<int, int> dureeSommet);
-int dateAuPlusTard(t_graphe * graphe, int sommet, map<int, int> dureeSommet);
+bool aUnCircuit(t_graphe * matriceTransitive);
+
 map<int, int> calendrierAuPlusTard(t_graphe * graphe, map<int, int> dureeSommet);
-bool validation(t_graphe * graphe);
-void editeur(t_graphe * graphe);
-void addDeleteTask(t_graphe * graphe);
-void addDeleteConstraint(t_graphe * graphe);
-void editDuration(t_graphe * graphe);
-set<int> sortieGraphe(t_graphe * graphe);
+map<int, int> calendrierAuPlusTot(t_graphe * graphe, map<int, int> dureeSommet);
+void copieGraphe(t_graphe * original, t_graphe * copie);
 void copieGrapheAvecSuppressionSommet(t_graphe * original, t_graphe * copie, int sommet);
 
-// GÈnÈration de la matrice vide
-void generateMatriceVide(t_graphe * target, int nbSommets)
-{
-    target->nbSommets = nbSommets;
-    target->MAdj = new bool * [target->nbSommets];
 
-    for (int s = 0; s < target->nbSommets; s++) {
-        target->MAdj[s] = new bool [target->nbSommets];
+int dateAuPlusTard(t_graphe * graphe, int sommet, map<int, int> dureeSommet);
+int dateAuPlusTot(t_graphe * graphe, int sommet, map<int, int> dureeSommet);
+map<int, int> demiDegreAdjacent(t_graphe * graphe);
 
-        for (int extTerm = 0; extTerm < target->nbSommets; extTerm++) {
-            target->MAdj[s][extTerm] = false;
-        }
-    }
+void editDuration(t_graphe * graphe);
+void editeur(t_graphe * graphe);
 
-    target->MVal = new int * [target->nbSommets];
+int findFirstWhereEntier(map<int, int> m, int v);
 
-    for (int s = 0; s < target->nbSommets; s++) {
-        target->MVal[s] = new int [target->nbSommets];
+void generateMatriceVide(t_graphe * target, int nbSommets);
+void generateFromFile(t_graphe * target, string filePath);
+map<int, int> generateFromFileTask(t_graphe * target, string filePath);
 
-        for (int extTerm = 0; extTerm < target->nbSommets; extTerm++) {
-            target->MVal[s][extTerm] = 0;
-        }
-    }
+void loadFromFile(t_graphe * graphe);
+
+void mainMenu();
+
+map<int, int> rang(t_graphe * graphe);
+
+set<int> sortieGraphe(t_graphe * graphe);
+
+void transitive(t_graphe * original, t_graphe * target, bool display = false);
+
+bool validation(t_graphe * graphe);
+
+// MAIN
+int main(){
+    /*
+     
+     // D√©claration graphe
+     t_graphe * G = new t_graphe;
+     
+     cout << "Generation a partir du fichier" << endl;
+     generateFromFile(G);
+     
+     cout << "Matrice adjacente originale :" << endl;
+     
+     //afficheMatriceAdjacente(G);
+     
+     afficheCompletGraphe(G);
+     
+     t_graphe * t = new t_graphe;
+     
+     cout << "Transitivite :" << endl;
+     transitive(G, t, true);
+     
+     bool valide = validation(G);
+     
+     if (valide)
+     {
+     cout << "Le graphe a ete valide" << endl;
+     }
+     else
+     {
+     cout << "Le graphe n'a pas ete valide" << endl;
+     }
+     
+     cout << "Rang" << endl;
+     affichageRang(rang(G));
+     
+     map<int, int> dureeSommet;
+     cout << "Generation a partir du fichier" << endl;
+     dureeSommet = generateFromFileTask(G);
+     
+     //    cout << "Matrice adjacente originale :" << endl;
+     //    afficheMatriceAdjacente(G);
+     
+     cout << "Matrice complete :" << endl;
+     afficheCompletGraphe(G);
+     
+     calendrierAuPlusTot(G, dureeSommet);
+     calendrierAuPlusTard(G, dureeSommet);*/
+    
+    mainMenu();
+    
+    return 1;
 }
 
-// Copie d'un graphe de l'original (argument 1 ‡ l'argument 2, nouvelle variable)
-void copieGraphe(t_graphe * original, t_graphe * copie)
-{
-    copie->nbSommets = original->nbSommets;
-
-    copie->MAdj = new bool * [copie->nbSommets];
-    copie->MVal = new int * [copie->nbSommets];
-
-    for (int i = 0; i < copie->nbSommets; i++) {
-        copie->MAdj[i] = new bool [copie->nbSommets];
-        copie->MVal[i] = new int [copie->nbSommets];
-
-        for (int j = 0; j < copie->nbSommets; j++) {
-            copie->MAdj[i][j] = original->MAdj[i][j];
-            copie->MVal[i][j] = original->MVal[i][j];
-        }
-    }
+void addDeleteTask(t_graphe * graphe){
+    return;
 }
-
-// Copie du graphe en supprimant le sommet spÈcifiÈ en 3Ëme argument
-void copieGrapheAvecSuppressionSommet(t_graphe * original, t_graphe * copie, int sommet)
-{
-    // RÈduction du nombre de sommets
-    copie->nbSommets = original->nbSommets - 1;
-
-    copie->MAdj = new bool * [copie->nbSommets];
-    copie->MVal = new int * [copie->nbSommets];
-
-    int comptJ = 0, comptI = 0;
-
-    for (int i = 0; i < original->nbSommets; i++) {
-        // Tant qu'on n'est pas sur le sommet ‡ supprimer, on copie
-        if (i != sommet) {
-            // Initialisation du compteur des colonnes, pour ne pas Ítre
-            // dÈsynchronisÈ puisqu'on supprime un sommet
-            comptJ = 0;
-
-            // RÈservation des adresses des lignes
-            copie->MAdj[comptI] = new bool [copie->nbSommets];
-            copie->MVal[comptI] = new int [copie->nbSommets];
-
-            for (int j = 0; j < original->nbSommets; j++) {
-                if (j != sommet) {
-                    // Remplissage des cases
-                    copie->MAdj[comptI][comptJ] = original->MAdj[i][j];
-                    copie->MVal[comptI][comptJ] = original->MVal[i][j];
-                    comptJ++;
-                }
-            }
-            comptI++;
-        }
-    }
+void addDeleteConstraint(t_graphe * graphe){
+    return;
 }
-
-// Insertion des donnÈes dans notre structure de donnÈes
-// ‡ partir du fichier de graphe
-void generateFromFile(t_graphe * target) {
-    // Lecture du graphe sur fichier
-    ifstream fg (FICHIER_GRAPHE);
-
-    int nbSommets;
-
-    // Lecture du nombre de sommets et allocation dynamique des SdD
-    fg >> nbSommets;
-
-    generateMatriceVide(target, nbSommets);
-
-    // Lecture des arcs
-    int extInit, extTerm, valeur;
-
-    fg >> extInit;
-    // -1 signifie la fin du fichier
-    while (extInit != -1) {
-        fg >> extTerm;
-        fg >> valeur;
-        target->MAdj[extInit][extTerm] = true;
-        target->MVal[extInit][extTerm] = valeur;
-        fg >> extInit;
-    }
-}
-
-// Insertion des donnÈes dans notre structure de donnÈes
-// ‡ partir du fichier de graphe ayant des contraintes
-map<int, int> generateFromFileTask(t_graphe * target) {
-    // Lecture du graphe sur fichier
-    ifstream fg (FICHIER_GRAPHE);
-
-    int nbSommets;
-
-    // Lecture du nombre de sommets et allocation dynamique des SdD
-    fg >> nbSommets;
-    // On ajoute 2 sommets au nombre du fichier (un Ètat de dÈpart et un Ètat d'arrivÈe)
-    nbSommets += 2;
-    cout << "Nombre sommets: " << nbSommets - 2 << " + 2 (0 et " << nbSommets - 1 <<")"  << endl;
-
-    // On crÈe notre matrice vide dans laquelle on va copier notre nouveau graphe
-    generateMatriceVide(target, nbSommets);
-
-    // Lecture des arcs
-    int extInit, contrainte, duree;
-
-    // Initialisation des contraintes et des durÈes possibles
-    set<int> contrainteList = set<int>();
-    map<int, int> extInitDuree = map<int, int>();
-
-    for (int i = 1; i < nbSommets-1; i++)
-    {
-        // Insertion des contraintes
-        contrainteList.insert(i);
-    }
-
-    // /!\ ATTENTION : les contraintes et init dÈmarrent ‡ 1 dans le fichier, 0 dans la matrice
-
-    // lecture du nom du sommet
-    fg >> extInit;
-    // -1 signifie la fin du fichier
-    if (extInit != -1)
-    {
-        cout << "sommet : " << extInit;
-        while (extInit != -1)
-        {
-            fg >> duree;
-            cout << ", duree: " << duree;
-            extInitDuree[extInit] = duree;
-            fg >> contrainte;
-            int cCount = 0;
-            cout <<  ", contrainte : ";
-            // -1 signifie la fin de la ligne
-            while (contrainte != -1)
-            {
-                // Chaque fois qu'on passe sur une nouvelle contrainte, on la
-                // retire de la liste pour trouver les sommets dont les autres
-                // ne dÈpendent pas
-                contrainteList.erase(contrainte);
-                target->MAdj[contrainte][extInit] = true;
-                cout << (cCount != 0 ? ", ": "") << contrainte;
-                cCount++;
-                fg >> contrainte;
-            }
-            if (contrainte == -1 && cCount == 0)
-            {
-                // Pas de contraintes = entrÈes
-                cout << "Pas de contraintes ...";
-                target->MAdj[0][extInit] = true;
-                target->MVal[0][extInit] = 0;
-            }
-            cout << endl;
-
-            fg >> extInit;
-            if (extInit != -1)
-            {
-                cout << "sommet : " << extInit;
-            }
-
-        }
-    }
-    // Pour les sommets qui ne sont pas dans les contraintes
-    // Ils ne sont attendus par personne
-    for (auto const elem: contrainteList) {
-        target->MAdj[elem][nbSommets-1] = true;
-        target->MVal[elem][nbSommets-1] = 0;
-    }
-
-
-    for (int i = 0; i < nbSommets; i++) {
-        for (int j = 0; j < nbSommets; j++) {
-            if (target->MAdj[i][j]) {
-                target->MVal[i][j] = extInitDuree[i];
-            }
-        }
-    }
-
-    return extInitDuree;
+// L'affichage complet du graphe : matrices d'ajacence et d'incidence
+void afficheCompletGraphe(t_graphe * target) {
+    afficheMatriceAdjacente(target);
+    afficheMatriceIncidence(target);
 }
 
 // Affichage de la matrice adjacente
 void afficheMatriceAdjacente(t_graphe * target) {
     /*
-        Jusqu'‡ 10, on peur avoir un bel affichage condensÈ avec le nom des sommets
+        Jusqu'≈ï 10, on peur avoir un bel affichage condens√© avec le nom des sommets
         Au dela, on n'a plus le nom des sommets
     */
 
@@ -296,7 +179,7 @@ void afficheMatriceAdjacente(t_graphe * target) {
 // Affichage de la matrice d'incidence
 void afficheMatriceIncidence(t_graphe * target) {
     /*
-        Jusqu'‡ 10, on peur avoir un bel affichage condensÈ avec le nom des sommets
+        Jusqu'≈ï 10, on peur avoir un bel affichage condens√© avec le nom des sommets
         Au dela, on n'a plus le nom des sommets
     */
 
@@ -330,7 +213,7 @@ void afficheMatriceIncidence(t_graphe * target) {
         }
         for (int y = 0; y < target->nbSommets; y ++) {
             if (target->MAdj[x][y] == true) {
-                cout << target->MVal[x][y]; // ProblËme si valeur > 9 ou < 0
+                cout << target->MVal[x][y]; // Problƒçme si valeur > 9 ou < 0
                 if (y != target->nbSommets-1) {
                     cout << ".";
                 }
@@ -346,26 +229,693 @@ void afficheMatriceIncidence(t_graphe * target) {
     }
 }
 
-// L'affichage complet du graphe : matrices d'ajacence et d'incidence
-void afficheCompletGraphe(t_graphe * target) {
-    afficheMatriceAdjacente(target);
-    afficheMatriceIncidence(target);
+// It√©rateur permettant l'affichage propre d'un rang
+void affichageRang(map<int, int> rS) {
+    for (auto const elem: rS) {
+        cout << "sommet : "<< elem.first << " , rang : " << elem.second << endl;
+    }
 }
 
-/* Remplissage de la matrice transitive (deuxiËme argument) ‡ partir
+// Recherche de circuit ≈ï partir de la matrice transitive
+bool aUnCircuit(t_graphe * matriceTransitive) {
+    for (int i = 0 ; i < matriceTransitive->nbSommets ; i++)
+    {
+        if (matriceTransitive->MAdj[i][i] == true)
+        {
+            // On a un 1 sur la diagonale: il y a un circuit et on sort
+            return true;
+        }
+    }
+    
+    // Si on n'est pas sorti jusque l≈ï, il y a un circuit
+    return false;
+}
+
+// Affiche le calendrier au plus tard, en se basant sur dateAuPlusTard
+map<int, int> calendrierAuPlusTard(t_graphe * graphe, map<int, int> dureeSommet) {
+    
+    // R√©cup√©ration et affichage des rangs
+    map<int, int> rangS = rang(graphe);
+    affichageRang(rangS);
+    
+    // Initialisation du tableau des dates des sommets
+    map<int, int> datesSommet = map<int, int>();
+    
+    // Pour chaque sommet, on calcule sa date au plus tard
+    for (auto const elem: rangS) {
+        datesSommet[elem.first] = dateAuPlusTard(graphe, elem.first, dureeSommet);
+    }
+    
+    for (auto const elem: datesSommet) {
+        cout << "sommet: " << elem.first << ", date au plus tard : " << elem.second << endl;
+    }
+    
+    return datesSommet;
+}
+
+// Affiche le calendrier au plus t√¥t, en se basant sur dateAuPlusTot
+map<int, int> calendrierAuPlusTot(t_graphe * graphe, map<int, int> dureeSommet) {
+    
+    // R√©cup√©ration et affichage des rangs
+    map<int, int> rangS = rang(graphe);
+    affichageRang(rangS);
+    
+    // Initialisation du tableau des dates des sommets
+    map<int, int> datesSommet = map<int, int>();
+    
+    // pour chaque sommet, on calcule sa date au plus tot
+    for (auto const elem: rangS) {
+        datesSommet[elem.first] = dateAuPlusTot(graphe, elem.first, dureeSommet);
+    }
+    
+    for (auto const elem: datesSommet) {
+        cout << "sommet: " << elem.first << ", date au plus tot : " << elem.second << endl;
+    }
+    
+    return datesSommet;
+}
+
+// Copie d'un graphe de l'original (argument 1 ≈ï l'argument 2, nouvelle variable)
+void copieGraphe(t_graphe * original, t_graphe * copie){
+    copie->nbSommets = original->nbSommets;
+    
+    copie->MAdj = new bool * [copie->nbSommets];
+    copie->MVal = new int * [copie->nbSommets];
+    
+    for (int i = 0; i < copie->nbSommets; i++) {
+        copie->MAdj[i] = new bool [copie->nbSommets];
+        copie->MVal[i] = new int [copie->nbSommets];
+        
+        for (int j = 0; j < copie->nbSommets; j++) {
+            copie->MAdj[i][j] = original->MAdj[i][j];
+            copie->MVal[i][j] = original->MVal[i][j];
+        }
+    }
+}
+
+// Copie du graphe en supprimant le sommet sp√©cifi√© en 3ƒçme argument
+void copieGrapheAvecSuppressionSommet(t_graphe * original, t_graphe * copie, int sommet){
+    // R√©duction du nombre de sommets
+    copie->nbSommets = original->nbSommets - 1;
+    
+    copie->MAdj = new bool * [copie->nbSommets];
+    copie->MVal = new int * [copie->nbSommets];
+    
+    int comptJ = 0, comptI = 0;
+    
+    for (int i = 0; i < original->nbSommets; i++) {
+        // Tant qu'on n'est pas sur le sommet ≈ï supprimer, on copie
+        if (i != sommet) {
+            // Initialisation du compteur des colonnes, pour ne pas ƒôtre
+            // d√©synchronis√© puisqu'on supprime un sommet
+            comptJ = 0;
+            
+            // R√©servation des adresses des lignes
+            copie->MAdj[comptI] = new bool [copie->nbSommets];
+            copie->MVal[comptI] = new int [copie->nbSommets];
+            
+            for (int j = 0; j < original->nbSommets; j++) {
+                if (j != sommet) {
+                    // Remplissage des cases
+                    copie->MAdj[comptI][comptJ] = original->MAdj[i][j];
+                    copie->MVal[comptI][comptJ] = original->MVal[i][j];
+                    comptJ++;
+                }
+            }
+            comptI++;
+        }
+    }
+}
+
+// Calcul de la date au plus tard
+// Arguments : graphe, sommet dont on recherche la date, map de la dur√©e de tous les sommets
+int dateAuPlusTard(t_graphe * graphe, int sommet, map<int, int> dureeSommet) {
+    
+    // Date au plus tard = min(dateAuPlusTard(successeurs)) - dureeSommet[sommet]
+    // On cherche les successeurs
+    
+    set<int> succ = set<int>();
+    for (int i = 0; i < graphe->nbSommets; i++) {
+        if (graphe->MAdj[sommet][i]) succ.insert(i);
+    }
+    
+    // selectionner le min de succ
+    set<int> dateSucc = set<int>();
+    for (auto const elem: succ) {
+        dateSucc.insert(dateAuPlusTard(graphe, elem, dureeSommet) - dureeSommet[sommet]);
+    }
+    
+    if (dateSucc.empty())
+    {
+        return dateAuPlusTot(graphe, sommet, dureeSommet);
+    }
+    else
+    {
+        return *dateSucc.begin();
+    }
+}
+
+// Calcul de la date au plus t√¥t
+// Arguments : graphe, sommet dont on recherche la date, map de la dur√©e de tous les sommets
+int dateAuPlusTot(t_graphe * graphe, int sommet, map<int, int> dureeSommet) {
+    
+    // Date au plus tot = max(date au plus tot predecesseurs + duree predecesseur)
+    // Recherche des sommets predecesseurs
+    
+    // pred liste tous les pr√©d√©cesseurs du graphe
+    set<int> pred = set<int>();
+    for (int i = 0; i < graphe->nbSommets; i++) {
+        if (graphe->MAdj[i][sommet])
+        {
+            pred.insert(i);
+        }
+    }
+    
+    // S√©lectionner le max de datePred
+    set<int> datePred = set<int>();
+    for (auto const elem: pred) {
+        datePred.insert(dureeSommet[elem] + dateAuPlusTot(graphe, elem, dureeSommet));
+    }
+    
+    if (datePred.empty())
+    {
+        return 0;
+    }
+    else
+    {
+        return *datePred.rbegin(); // rbegin = dernier √©l√©ment
+    }
+}
+
+// Calcul du demi degr√© adjacent
+map<int, int> demiDegreAdjacent(t_graphe * graphe) {
+    
+    // On utilise une map pour les aretes entrantes
+    // map<num√©ro arete, nombre arete entrante>
+    map<int, int> aretesEntrantes = map<int, int>();
+    
+    for (int x = 0; x < graphe->nbSommets; x++) {
+        // Initialisation de toutes les aretes entrantes ≈ï 0
+        aretesEntrantes[x] = 0;
+    }
+    
+    for (int i = 0 ; i < graphe->nbSommets ; i++)
+    {
+        for (int j = 0 ; j < graphe->nbSommets ; j++)
+        {
+            if (graphe->MAdj[i][j] == true)
+            {
+                // Incr√©mentation de l'arete entrante num√©ro j
+                aretesEntrantes[j]++;
+            }
+        }
+    }
+    
+    return aretesEntrantes;
+}
+
+void editDuration(t_graphe * graphe){
+    return;
+}
+
+void editeur(t_graphe * graphe){
+    // affichage menu d'options
+    int choice = -1;
+    do{
+        do{
+            cout << "Editeur: " << endl;
+            cout << "1.Ajouter/Supprimer une tache" << endl;
+            cout << "2.Ajouter/Supprimer une contrainte" << endl;
+            cout << "3.Modifier une duree" << endl;
+            cout << "0.Ne rien faire" << endl;
+            cout << "Choix : " << endl;
+            cin >> choice;
+        }while(choice < 0 && choice > 3);
+        
+        if(choice == 0) return;
+        
+        switch(choice){
+            case 1: // ajouter/supprimer t√¢che
+                addDeleteTask(graphe);
+                break;
+            case 2: // ajouter/supprimer contrainte
+                addDeleteConstraint(graphe);
+                break;
+            case 3: // modifier duree t√¢che.
+                editDuration(graphe);
+                break;
+            default:
+                return;
+        }
+    }while(choice != 0);
+    
+    return;
+}
+
+// Retourne le premier entier d'une map
+int findFirstWhereEntier(map<int, int> m, int v) {
+    for (auto const elem: m) {
+        if (elem.second == v)
+        {
+            return elem.first;
+        }
+    }
+    
+    // Retour de -1 si non trouv√©
+    return -1;
+}
+
+// Insertion des donn√©es dans notre structure de donn√©es
+// a partir du fichier de graphe
+void generateFromFile(t_graphe * target, string filePath) {
+    // Lecture du graphe sur fichier
+    ifstream fg (filePath);
+    
+    int nbSommets;
+    
+    // Lecture du nombre de sommets et allocation dynamique des SdD
+    fg >> nbSommets;
+    
+    generateMatriceVide(target, nbSommets);
+    
+    // Lecture des arcs
+    int extInit, extTerm, valeur;
+    
+    fg >> extInit;
+    // -1 signifie la fin du fichier
+    while (extInit != -1) {
+        fg >> extTerm;
+        fg >> valeur;
+        target->MAdj[extInit][extTerm] = true;
+        target->MVal[extInit][extTerm] = valeur;
+        fg >> extInit;
+    }
+    
+    fg.close();
+}
+
+// Insertion des donnees dans notre structure de donn√©es
+// a partir du fichier de graphe ayant des contraintes
+map<int, int> generateFromFileTask(t_graphe * target, string filePath) {
+    // Lecture du graphe sur fichier
+    ifstream fg (filePath);
+    
+    int nbSommets;
+    
+    // Lecture du nombre de sommets et allocation dynamique des SdD
+    fg >> nbSommets;
+    // On ajoute 2 sommets au nombre du fichier (un √©tat de d√©part et un √©tat d'arriv√©e)
+    nbSommets += 2;
+    cout << "Nombre sommets: " << nbSommets - 2 << " + 2 (0 et " << nbSommets - 1 <<")"  << endl;
+    
+    // On cr√©e notre matrice vide dans laquelle on va copier notre nouveau graphe
+    generateMatriceVide(target, nbSommets);
+    
+    // Lecture des arcs
+    int extInit, contrainte, duree;
+    
+    // Initialisation des contraintes et des dur√©es possibles
+    set<int> contrainteList = set<int>();
+    map<int, int> extInitDuree = map<int, int>();
+    
+    for (int i = 1; i < nbSommets-1; i++)
+    {
+        // Insertion des contraintes
+        contrainteList.insert(i);
+    }
+    
+    // /!\ ATTENTION : les contraintes et init d√©marrent ≈ï 1 dans le fichier, 0 dans la matrice
+    
+    // lecture du nom du sommet
+    fg >> extInit;
+    // -1 signifie la fin du fichier
+    if (extInit != -1)
+    {
+        cout << "sommet : " << extInit;
+        while (extInit != -1)
+        {
+            fg >> duree;
+            cout << ", duree: " << duree;
+            extInitDuree[extInit] = duree;
+            fg >> contrainte;
+            int cCount = 0;
+            cout <<  ", contrainte : ";
+            // -1 signifie la fin de la ligne
+            while (contrainte != -1)
+            {
+                // Chaque fois qu'on passe sur une nouvelle contrainte, on la
+                // retire de la liste pour trouver les sommets dont les autres
+                // ne d√©pendent pas
+                contrainteList.erase(contrainte);
+                target->MAdj[contrainte][extInit] = true;
+                cout << (cCount != 0 ? ", ": "") << contrainte;
+                cCount++;
+                fg >> contrainte;
+            }
+            if (contrainte == -1 && cCount == 0)
+            {
+                // Pas de contraintes = entr√©es
+                cout << "Pas de contraintes ...";
+                target->MAdj[0][extInit] = true;
+                target->MVal[0][extInit] = 0;
+            }
+            cout << endl;
+            
+            fg >> extInit;
+            if (extInit != -1)
+            {
+                cout << "sommet : " << extInit;
+            }
+            
+        }
+    }
+    // Pour les sommets qui ne sont pas dans les contraintes
+    // Ils ne sont attendus par personne
+    for (auto const elem: contrainteList) {
+        target->MAdj[elem][nbSommets-1] = true;
+        target->MVal[elem][nbSommets-1] = 0;
+    }
+    
+    
+    for (int i = 0; i < nbSommets; i++) {
+        for (int j = 0; j < nbSommets; j++) {
+            if (target->MAdj[i][j]) {
+                target->MVal[i][j] = extInitDuree[i];
+            }
+        }
+    }
+    
+    fg.close();
+    
+    return extInitDuree;
+}
+
+// G√©n√©ration de la matrice vide
+void generateMatriceVide(t_graphe * target, int nbSommets){
+    target->nbSommets = nbSommets;
+    target->MAdj = new bool * [target->nbSommets];
+    
+    for (int s = 0; s < target->nbSommets; s++) {
+        target->MAdj[s] = new bool [target->nbSommets];
+        
+        for (int extTerm = 0; extTerm < target->nbSommets; extTerm++) {
+            target->MAdj[s][extTerm] = false;
+        }
+    }
+    
+    target->MVal = new int * [target->nbSommets];
+    
+    for (int s = 0; s < target->nbSommets; s++) {
+        target->MVal[s] = new int [target->nbSommets];
+        
+        for (int extTerm = 0; extTerm < target->nbSommets; extTerm++) {
+            target->MVal[s][extTerm] = 0;
+        }
+    }
+}
+
+void loadFromFile(t_graphe * graphe){
+    /**
+     list of available files:
+     - buob-barbot-poupa-test1.txt
+     - buob-barbot-poupa-test2.txt
+     - buob-barbot-poupa-test3.txt
+     - buob-barbot-poupa-test4.txt
+     - buob-barbot-poupa-test5.txt
+     - buob-barbot-poupa-test6.txt
+     - buob-barbot-poupa-test7.txt
+     */
+    
+    int fileChoice = 0;
+    vector<string> files = {
+        "./buob-barbot-poupa-test1.txt",
+        "./buob-barbot-poupa-test2.txt",
+        "./buob-barbot-poupa-test3.txt",
+        "./buob-barbot-poupa-test4.txt",
+        "./buob-barbot-poupa-test5.txt",
+        "./buob-barbot-poupa-test6.txt",
+        "./buob-barbot-poupa-test7.txt",
+    };
+    
+    do {
+        cout << "Charger fichier: " << endl;
+        cout << "1. Annexe test 1" << endl;
+        cout << "2. Annexe test 2" << endl;
+        cout << "3. Annexe test 3" << endl;
+        cout << "4. Annexe test 4" << endl;
+        cout << "5. Annexe test 5" << endl;
+        cout << "6. Annexe test 6" << endl;
+        cout << "7. Annexe test 7" << endl;
+        cout << "8. Saisir chemin du fichier" << endl;
+        cout << "Choix: " << endl;
+        cin >> fileChoice;
+    }while (fileChoice < 1 || fileChoice > 8);
+    
+    string filePath;
+    if(fileChoice <= 7) {
+        filePath = string(".") + string(SEPARATOR) + files[fileChoice-1];
+    }
+    switch(fileChoice){
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+            generateFromFile(graphe, filePath);
+            break;
+        case 6:
+        case 7:
+            generateFromFileTask(graphe, filePath);
+            break;
+        default:
+            ifstream test;
+            do{
+                cout << "chemin de votre matrice: " << endl;
+                cin >> filePath;
+                test.open(filePath);
+                if(!test){
+                    cout << "chemin incorrect ..." << endl;
+                }
+            }while(!test);
+            
+            test.close();
+            
+            char isConstraint;
+            do{
+                cout << "S'agit-il d'un tableau de contraintes ? [O/n]" << endl;
+                cin >> isConstraint;
+            }while(isConstraint != 'n' && isConstraint != 'O');
+            
+            if(isConstraint == 'n'){
+                generateFromFile(graphe, filePath);
+            }
+            else{
+                generateFromFileTask(graphe, filePath);
+            }
+    }
+    return;
+}
+
+void mainMenu(){
+    cout << "-----------------------" << endl;
+    cout << "| Theorie des graphes |" << endl;
+    cout << "|     mini-projet     |" << endl;
+    cout << "|                     |" << endl;
+    cout << "| Realise par:        |" << endl;
+    cout << "|   - Barbot Timothee |" << endl;
+    cout << "|   - Buob Edgar      |" << endl;
+    cout << "|   - Poupa Adrien    |" << endl;
+    cout << "-----------------------" << endl;
+    
+    int choice = 0;
+    bool fileLoaded = false;
+    t_graphe * graphe = new t_graphe();
+    t_graphe * tempTransitive = new t_graphe();
+    do{
+        do{
+            cout << "Menu:" << endl;
+            cout << "1.Charger fichier" << endl;
+            if(fileLoaded){
+                cout << "2.Afficher graphe" << endl;
+                cout << "3.Fermeture transitive" << endl;
+                cout << "4.Detection de circuit" << endl;
+                cout << "5.Calcul de rang" << endl;
+                cout << "6.Calcul calendrier au plus tot et au plus tard" << endl;
+                cout << "7.Validation du graphe" << endl;
+                cout << "8.Editer graphe" << endl;
+            }
+            cout << "0.Quitter le programme" << endl;
+            cout << "Choix: " << endl;
+            cin >> choice;
+        }while(choice < 0 || (fileLoaded && choice > 8) || (!fileLoaded && choice > 1));
+        
+        switch(choice){
+            case 0:
+                cout << "Quitter !" << endl;
+                break;
+            case 1:
+                loadFromFile(graphe);
+                fileLoaded = true;
+                break;
+            case 2:
+                afficheCompletGraphe(graphe);
+                break;
+            case 3:
+                transitive(graphe, tempTransitive, true);
+                break;
+            case 4:{
+                transitive(graphe, tempTransitive, false);
+                bool res = aUnCircuit(tempTransitive);
+                if(res){
+                    cout << "Le graphe a un circuit" << endl;
+                }
+                else{
+                    cout << "Le graphe n'a pas de circuit" << endl;
+                }
+                break;
+            }
+            case 5:{
+                map<int, int> rangs = rang(graphe);
+                affichageRang(rangs);
+                break;
+            }
+            case 6:
+                // todo: rework calendrierAuPlusTard(graphe);
+                // todo: rework calendrierAuPlusTot(graphe);
+                break;
+            case 7:
+                validation(graphe);
+                break;
+            case 8:
+                editeur(graphe);
+                break;
+            default:
+                cout << "Autre menus ..." << endl;
+        }
+    }while(choice != 0);
+    return;
+}
+
+// Calcul du rang
+// todo : recursif
+map<int, int> rang(t_graphe * graphe){
+    /*
+     Calcul de rang
+     On v√©rifie s'il n'y a pas de circuit
+     On traite ensuite les sommets 1 ≈ï 1 en les supprimant de la matrice
+     On insƒçre le rang actuel dans le map rangIte qui contient nos rangs finaux
+     On doit √©galement avoir une autre variable pour garder l'ancien nom pour l'affichage
+     */
+    bool circuit = aUnCircuit(graphe);
+    t_graphe * workGraphe = new t_graphe();
+    t_graphe * tempGraphe = new t_graphe();
+    
+    copieGraphe(graphe, workGraphe);
+    
+    // Tableau contenant le rang et l'arete associ√©e
+    map<int, int> rangSommets = map<int, int>();
+    
+    if (circuit == true)
+    {
+        // Si le graphe a un circuit, on sort
+        cout << "Erreur : le graphe a un circuit" << endl;
+    }
+    else
+    {
+        int rangIte = 0;
+        map<int, int> aretesEntrantes;
+        int sommet = 0;
+        
+        // On garde l'ancien nom
+        int sommetRealname[graphe->nbSommets];
+        
+        // Initialisation des anciens noms des sommets
+        for (int n = 0; n < graphe->nbSommets; n++) {
+            sommetRealname[n] = n;
+        }
+        
+        // Tant qu'on a encore des sommets dans le map
+        while (sommet >= 0) {
+            // On r√©cupƒçre la liste des sommets ≈ï traiter
+            aretesEntrantes = demiDegreAdjacent(workGraphe);
+            
+            // S√©lection du sommet a traiter (c'est ≈ï dire ≈ï retirer)
+            sommet = findFirstWhereEntier(aretesEntrantes, 0);
+            
+            if (sommet != -1) {
+                rangSommets[sommetRealname[sommet]] = rangIte;
+                
+                bool found = false;
+                for (int n = 0; n < graphe->nbSommets; n++) {
+                    if (n == sommet) {
+                        found = true;
+                    }
+                    if (found) {
+                        // Correction du nom d'affichage : sans cela, on ne pourrait pas
+                        // dire quel sommet a √©t√© supprim√© ≈ï chaque it√©ration
+                        sommetRealname[n] = (n == graphe->nbSommets - 1 ? 0 : sommetRealname[n+1]);
+                    }
+                }
+                
+                rangIte++;
+                
+                // Supprimer ligne et colonne du sommet dans la matrice
+                copieGrapheAvecSuppressionSommet(workGraphe, tempGraphe, sommet);
+                
+                delete workGraphe;
+                workGraphe = tempGraphe;
+                tempGraphe = new t_graphe();
+            }
+        }
+    }
+    
+    return rangSommets;
+}
+
+// R√©cup√©ration d'un set<int> de sorties
+set<int> sortieGraphe(t_graphe * graphe){
+    map<int, int> aretesSortantes = map<int, int>();
+    set<int> sorties = set<int>();
+    
+    for (int x = 0; x < graphe->nbSommets; x++) {
+        aretesSortantes[x] = 0;
+    }
+    
+    for (int i = 0 ; i < graphe->nbSommets ; i++)
+    {
+        for (int j = 0 ; j < graphe->nbSommets ; j++)
+        {
+            if (graphe->MAdj[j][i] == true)
+            {
+                aretesSortantes[j]++;
+            }
+        }
+    }
+    
+    for (int x = 0; x < graphe->nbSommets; x++) {
+        if (aretesSortantes[x] == 0) // Si on n'a que des 0 sur une ligne, c'est une sortie
+        {
+            sorties.insert(x);
+        }
+    }
+    
+    return sorties;
+}
+
+/* Remplissage de la matrice transitive (deuxieme argument) a partir
    de la matrice originale (premier argument)
-   le 3Ëme argument dÈclenche l'affichage (ou pas) */
+   le 3eme argument d√©clenche l'affichage (ou pas) */
 void transitive(t_graphe * original, t_graphe * target, bool display) {
     t_graphe * m = new t_graphe;
 
-    // On gÈnËre deux matrices vides
+    // On g√©nƒçre deux matrices vides
     generateMatriceVide(m, original->nbSommets);
     generateMatriceVide(target, original->nbSommets);
 
     /*
         Pour calculer la matrice transitive :
-        On multiplie notre matrice d'adjacence par elle-mÍme nbSommets - 1 fois
-        DËs qu'on l‡, on rÈunit toutes les puissances, c'est ‡ dire que si on a
+        On multiplie notre matrice d'adjacence par elle-mƒôme nbSommets - 1 fois
+        Dƒçs qu'on l≈ï, on r√©unit toutes les puissances, c'est ≈ï dire que si on a
         eu un TRUE une fois dans une case, la matrice transitive aura ce TRUE
         Cf http://www.info2.uqam.ca/~inf1130/documents/FermetureMatrices.pdf
     */
@@ -389,7 +939,7 @@ void transitive(t_graphe * original, t_graphe * target, bool display) {
             }
         }
 
-        // Affichage de toutes les puissances calculÈes et de la matrice transitive dÈterminÈe
+        // Affichage de toutes les puissances calcul√©es et de la matrice transitive d√©termin√©e
         if (display)
         {
             cout << "m^" << n <<" : " << endl;
@@ -401,287 +951,13 @@ void transitive(t_graphe * original, t_graphe * target, bool display) {
     }
 }
 
-// Recherche de circuit ‡ partir de la matrice transitive
-bool aUnCircuit(t_graphe * matriceTransitive) {
-    for (int i = 0 ; i < matriceTransitive->nbSommets ; i++)
-    {
-        if (matriceTransitive->MAdj[i][i] == true)
-        {
-            // On a un 1 sur la diagonale: il y a un circuit et on sort
-            return true;
-        }
-    }
-
-    // Si on n'est pas sorti jusque l‡, il y a un circuit
-    return false;
-}
-
-// Calcul du demi degrÈ adjacent
-map<int, int> demiDegreAdjacent(t_graphe * graphe) {
-
-    // On utilise une map pour les aretes entrantes
-    // map<numÈro arete, nombre arete entrante>
-    map<int, int> aretesEntrantes = map<int, int>();
-
-    for (int x = 0; x < graphe->nbSommets; x++) {
-        // Initialisation de toutes les aretes entrantes ‡ 0
-        aretesEntrantes[x] = 0;
-    }
-
-    for (int i = 0 ; i < graphe->nbSommets ; i++)
-    {
-        for (int j = 0 ; j < graphe->nbSommets ; j++)
-        {
-            if (graphe->MAdj[i][j] == true)
-            {
-                // IncrÈmentation de l'arete entrante numÈro j
-                aretesEntrantes[j]++;
-            }
-        }
-    }
-
-    return aretesEntrantes;
-}
-
-// Retourne le premier entier d'une map
-int findFirstWhereEntier(map<int, int> m, int v) {
-    for (auto const elem: m) {
-        if (elem.second == v)
-        {
-            return elem.first;
-        }
-    }
-
-    // Retour de -1 si non trouvÈ
-    return -1;
-}
-
-// Calcul du rang
-map<int, int> rang(t_graphe * graphe)
-{
-    /*
-        Calcul de rang
-        On vÈrifie s'il n'y a pas de circuit
-        On traite ensuite les sommets 1 ‡ 1 en les supprimant de la matrice
-        On insËre le rang actuel dans le map rangIte qui contient nos rangs finaux
-        On doit Ègalement avoir une autre variable pour garder l'ancien nom pour l'affichage
-    */
-    bool circuit = aUnCircuit(graphe);
-    t_graphe * workGraphe = new t_graphe();
-    t_graphe * tempGraphe = new t_graphe();
-
-    copieGraphe(graphe, workGraphe);
-
-    // Tableau contenant le rang et l'arete associÈe
-    map<int, int> rangSommets = map<int, int>();
-
-    if (circuit == true)
-    {
-        // Si le graphe a un circuit, on sort
-        cout << "Erreur : le graphe a un circuit" << endl;
-    }
-    else
-    {
-        int rangIte = 0;
-        map<int, int> aretesEntrantes;
-        int sommet = 0;
-
-        // On garde l'ancien nom
-        int sommetRealname[graphe->nbSommets];
-
-        // Initialisation des anciens noms des sommets
-        for (int n = 0; n < graphe->nbSommets; n++) {
-            sommetRealname[n] = n;
-        }
-
-        // Tant qu'on a encore des sommets dans le map
-        while (sommet >= 0) {
-            // On rÈcupËre la liste des sommets ‡ traiter
-            aretesEntrantes = demiDegreAdjacent(workGraphe);
-
-            // SÈlection du sommet a traiter (c'est ‡ dire ‡ retirer)
-            sommet = findFirstWhereEntier(aretesEntrantes, 0);
-
-            if (sommet != -1) {
-                rangSommets[sommetRealname[sommet]] = rangIte;
-
-                bool found = false;
-                for (int n = 0; n < graphe->nbSommets; n++) {
-                    if (n == sommet) {
-                        found = true;
-                    }
-                    if (found) {
-                        // Correction du nom d'affichage : sans cela, on ne pourrait pas
-                        // dire quel sommet a ÈtÈ supprimÈ ‡ chaque itÈration
-                        sommetRealname[n] = (n == graphe->nbSommets - 1 ? 0 : sommetRealname[n+1]);
-                    }
-                }
-
-                rangIte++;
-
-                // Supprimer ligne et colonne du sommet dans la matrice
-                copieGrapheAvecSuppressionSommet(workGraphe, tempGraphe, sommet);
-
-                delete workGraphe;
-                workGraphe = tempGraphe;
-                tempGraphe = new t_graphe();
-            }
-        }
-    }
-
-    return rangSommets;
-}
-
-// ItÈrateur permettant l'affichage propre d'un rang
-void affichageRang(map<int, int> rS) {
-    for (auto const elem: rS) {
-        cout << "sommet : "<< elem.first << " , rang : " << elem.second << endl;
-    }
-}
-
-// Calcul de la date au plus tÙt
-// Arguments : graphe, sommet dont on recherche la date, map de la durÈe de tous les sommets
-int dateAuPlusTot(t_graphe * graphe, int sommet, map<int, int> dureeSommet) {
-
-    // Date au plus tot = max(date au plus tot predecesseurs + duree predecesseur)
-    // Recherche des sommets predecesseurs
-
-    // pred liste tous les prÈdÈcesseurs du graphe
-    set<int> pred = set<int>();
-    for (int i = 0; i < graphe->nbSommets; i++) {
-        if (graphe->MAdj[i][sommet])
-        {
-            pred.insert(i);
-        }
-    }
-
-    // SÈlectionner le max de datePred
-    set<int> datePred = set<int>();
-    for (auto const elem: pred) {
-        datePred.insert(dureeSommet[elem] + dateAuPlusTot(graphe, elem, dureeSommet));
-    }
-
-    if (datePred.empty())
-    {
-        return 0;
-    }
-    else
-    {
-        return *datePred.rbegin(); // rbegin = dernier ÈlÈment
-    }
-}
-
-// Affiche le calendrier au plus tÙt, en se basant sur dateAuPlusTot
-map<int, int> calendrierAuPlusTot(t_graphe * graphe, map<int, int> dureeSommet) {
-
-    // RÈcupÈration et affichage des rangs
-    map<int, int> rangS = rang(graphe);
-    affichageRang(rangS);
-
-    // Initialisation du tableau des dates des sommets
-    map<int, int> datesSommet = map<int, int>();
-
-    // pour chaque sommet, on calcule sa date au plus tot
-    for (auto const elem: rangS) {
-        datesSommet[elem.first] = dateAuPlusTot(graphe, elem.first, dureeSommet);
-    }
-
-    for (auto const elem: datesSommet) {
-        cout << "sommet: " << elem.first << ", date au plus tot : " << elem.second << endl;
-    }
-
-    return datesSommet;
-}
-
-// Calcul de la date au plus tard
-// Arguments : graphe, sommet dont on recherche la date, map de la durÈe de tous les sommets
-int dateAuPlusTard(t_graphe * graphe, int sommet, map<int, int> dureeSommet) {
-
-    // Date au plus tard = min(dateAuPlusTard(successeurs)) - dureeSommet[sommet]
-    // On cherche les successeurs
-
-    set<int> succ = set<int>();
-    for (int i = 0; i < graphe->nbSommets; i++) {
-        if (graphe->MAdj[sommet][i]) succ.insert(i);
-    }
-
-    // selectionner le min de succ
-    set<int> dateSucc = set<int>();
-    for (auto const elem: succ) {
-        dateSucc.insert(dateAuPlusTard(graphe, elem, dureeSommet) - dureeSommet[sommet]);
-    }
-
-    if (dateSucc.empty())
-    {
-        return dateAuPlusTot(graphe, sommet, dureeSommet);
-    }
-    else
-    {
-        return *dateSucc.begin();
-    }
-}
-
-// Affiche le calendrier au plus tard, en se basant sur dateAuPlusTard
-map<int, int> calendrierAuPlusTard(t_graphe * graphe, map<int, int> dureeSommet) {
-
-    // RÈcupÈration et affichage des rangs
-    map<int, int> rangS = rang(graphe);
-    affichageRang(rangS);
-
-    // Initialisation du tableau des dates des sommets
-    map<int, int> datesSommet = map<int, int>();
-
-    // Pour chaque sommet, on calcule sa date au plus tard
-    for (auto const elem: rangS) {
-        datesSommet[elem.first] = dateAuPlusTard(graphe, elem.first, dureeSommet);
-    }
-
-    for (auto const elem: datesSommet) {
-        cout << "sommet: " << elem.first << ", date au plus tard : " << elem.second << endl;
-    }
-
-    return datesSommet;
-}
-
-// RÈcupÈration d'un set<int> de sorties
-set<int> sortieGraphe(t_graphe * graphe)
-{
-    map<int, int> aretesSortantes = map<int, int>();
-    set<int> sorties = set<int>();
-
-    for (int x = 0; x < graphe->nbSommets; x++) {
-        aretesSortantes[x] = 0;
-    }
-
-    for (int i = 0 ; i < graphe->nbSommets ; i++)
-    {
-        for (int j = 0 ; j < graphe->nbSommets ; j++)
-        {
-            if (graphe->MAdj[j][i] == true)
-            {
-                aretesSortantes[j]++;
-            }
-        }
-    }
-
-    for (int x = 0; x < graphe->nbSommets; x++) {
-        if (aretesSortantes[x] == 0) // Si on n'a que des 0 sur une ligne, c'est une sortie
-        {
-            sorties.insert(x);
-        }
-    }
-
-    return sorties;
-}
-
 // Valide le graphe en suivant les 5 points du sujet
-bool validation(t_graphe * graphe)
-{
+bool validation(t_graphe * graphe){
     cout << "Validation du graphe" << endl;
 
     bool valide = true;
 
-    // a) 1 seul point d'entrÈe
+    // a) 1 seul point d'entr√©e
     map<int, int> aretesEntrantes = map<int, int>();
 
     for (int x = 0; x < graphe->nbSommets; x++) {
@@ -702,10 +978,10 @@ bool validation(t_graphe * graphe)
     int compteurEntrees = 0, entree;
 
     for (int x = 0; x < graphe->nbSommets; x++) {
-        if (aretesEntrantes[x] == 0) // Si on n'a que des 0 sur une colonne, c'est une entrÈe
+        if (aretesEntrantes[x] == 0) // Si on n'a que des 0 sur une colonne, c'est une entr√©e
         {
             compteurEntrees++;
-            entree = x; // On crÈe une variable contenant le numÈro de l'entrÈe pour d)
+            entree = x; // On cr√©e une variable contenant le num√©ro de l'entr√©e pour d)
         }
     }
 
@@ -749,7 +1025,7 @@ bool validation(t_graphe * graphe)
         if (aretesSortantes[x] == 0) // Si on n'a que des 0 sur une ligne, c'est une sortie
         {
             compteurSorties++;
-            sortie = x; // On crÈe une variable contenant le numÈro de la sortie pour d)
+            sortie = x; // On cr√©e une variable contenant le num√©ro de la sortie pour d)
         }
     }
 
@@ -784,13 +1060,13 @@ bool validation(t_graphe * graphe)
         cout << "c) Il n'y a pas de circuit" << endl;
     }
 
-    // d) Il existe un chemin du point díentrÈe ‡ tout autre sommet
+    // d) Il existe un chemin du point d‚Äôentr√©e ≈ï tout autre sommet
     bool dValide = true;
-    // CrÈation du graphe temporaire
+    // Cr√©ation du graphe temporaire
     t_graphe * t = new t_graphe;
-    // t reÁoit la matrice d'adjacence du graphe transitif
+    // t re√ßoit la matrice d'adjacence du graphe transitif
     transitive(graphe, t, false);
-    // On vÈrifie qu'on a bien true sur la ligne d'entree (sauf lui-mÍme) pour avoir d)
+    // On v√©rifie qu'on a bien true sur la ligne d'entree (sauf lui-mƒôme) pour avoir d)
     for (int i = 0 ; i < t->nbSommets ; i++)
     {
         if (t->MAdj[entree][i] == false && i != entree)
@@ -806,9 +1082,9 @@ bool validation(t_graphe * graphe)
         cout << "d) Il y a bien un chemin du point d'entree a tout autre sommet" << endl;
     }
 
-    // e) Il existe un chemin de níimporte quel sommet au point de sortie
+    // e) Il existe un chemin de n‚Äôimporte quel sommet au point de sortie
     bool eValide = true;
-    // On vÈrifie qu'on a bien true sur la colonne de sortie (sauf lui-mÍme) pour avoir e)
+    // On v√©rifie qu'on a bien true sur la colonne de sortie (sauf lui-mƒôme) pour avoir e)
     for (int i = 0 ; i < t->nbSommets ; i++)
     {
         if (t->MAdj[i][sortie] == false && i != sortie)
@@ -824,99 +1100,10 @@ bool validation(t_graphe * graphe)
         cout << "e) Il y a bien un chemin de n'importe quel sommet au point de sortie" << endl;
     }
 
-    // Rien n'a ÈtÈ retournÈ jusque-l‡ ? Le graphe est validÈ !
+    // Rien n'a √©t√© retourn√© jusque-l≈ï ? Le graphe est valid√© !
     return valide;
 }
 
-void editeur(t_graphe * graphe){
-    // affichage menu d'options
-    int choice = -1;
-    do{
-        do{
-            cout << "Editeur: " << endl;
-            cout << "1.Ajouter/Supprimer une tache" << endl;
-            cout << "2.Ajouter/Supprimer une contrainte" << endl;
-            cout << "3.Modifier une duree" << endl;
-            cout << "0.Ne rien faire" << endl;
-            cout << "Choix : " << endl;
-            cin >> choice;
-        }while(choice < 0 && choice > 3);
-        
-        if(choice == 0) return;
-        
-        switch(choice){
-            case 1: // ajouter/supprimer t‚che
-                addDeleteTask(graphe);
-                break;
-            case 2: // ajouter/supprimer contrainte
-                addDeleteConstraint(graphe);
-                break;
-            case 3: // modifier duree t‚che.
-                editDuration(graphe);
-                break;
-            default:
-                return;
-        }
-    }while(choice != 0);
-    
-    return;
-}
 
-void addDeleteTask(t_graphe * graphe){
-    return;
-}
-void addDeleteConstraint(t_graphe * graphe){
-    return;
-}
-void editDuration(t_graphe * graphe){
-    return;
-}
 
-int main ()
-{
-    // DÈclaration graphe
-    t_graphe * G = new t_graphe;
 
-    cout << "Generation a partir du fichier" << endl;
-    generateFromFile(G);
-
-    cout << "Matrice adjacente originale :" << endl;
-
-    //afficheMatriceAdjacente(G);
-
-    afficheCompletGraphe(G);
-
-    t_graphe * t = new t_graphe;
-
-    cout << "Transitivite :" << endl;
-    transitive(G, t, true);
-
-    bool valide = validation(G);
-
-    if (valide)
-    {
-        cout << "Le graphe a ete valide" << endl;
-    }
-    else
-    {
-        cout << "Le graphe n'a pas ete valide" << endl;
-    }
-
-    cout << "Rang" << endl;
-    affichageRang(rang(G));
-/*
-    map<int, int> dureeSommet;
-    cout << "Generation a partir du fichier" << endl;
-    dureeSommet = generateFromFileTask(G);
-
-//    cout << "Matrice adjacente originale :" << endl;
-//    afficheMatriceAdjacente(G);
-
-    cout << "Matrice complete :" << endl;
-    afficheCompletGraphe(G);
-
-    calendrierAuPlusTot(G, dureeSommet);
-    calendrierAuPlusTard(G, dureeSommet);*/
-
-    return 1;
-}
