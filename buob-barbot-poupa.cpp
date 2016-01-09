@@ -3,6 +3,7 @@
 #include <set>
 #include <vector>
 #include <fstream>
+#include <iomanip>
 #ifdef _WIN32
 #define SEPARATOR "\\"
 #else
@@ -262,56 +263,35 @@ void addDeleteConstraint(t_graphe * graphe){
 // L'affichage complet du graphe : matrices d'adjacence et de valeurs
 void afficheCompletGraphe(t_graphe * target) {
     afficheMatriceAdjacente(target);
+    cout << endl;
     afficheMatriceValeurs(target);
 }
 
 // Affichage de la matrice adjacente
 void afficheMatriceAdjacente(t_graphe * target) {
-    /*
-        Jusqu'à 10, on peur avoir un bel affichage condensé avec le nom des sommets
-        Au dela, on n'a plus le nom des sommets
-    */
-
+    int fieldSize = 4;
     for (int x = -1; x < target->nbSommets; x++) {
         if (x == -1)
         {
-            cout << "  ";
+            cout << setfill(' ') << setw(fieldSize) << "";
         }
         else
         {
-            if (x < 10)
-            {
-                cout << x << " ";
-            }
-            else
-            {
-                cout << "+ ";
-            }
+            cout << setfill(' ') << setw(fieldSize) << x;
         }
     }
     cout << endl;
 
     for (int x = 0; x < target->nbSommets; x++) {
-        if (x < 10)
-        {
-            cout << x << " ";
-        }
-        else
-        {
-            cout << "+ ";
-        }
+        
+        cout << setfill(' ') << setw(fieldSize) << x;
+        
         for (int y = 0; y < target->nbSommets; y ++) {
             if (target->MAdj[x][y] == true) {
-                cout << "X";
-                if (y != target->nbSommets-1) {
-                    cout << ".";
-                }
+                cout << setfill(' ') << setw(fieldSize) << "X";
             }
-            else if (y == target->nbSommets-1) {
-                cout << ".";
-            }
-            else {
-                cout << "..";
+            else{
+                cout << setfill(' ') << setw(fieldSize) << ".";
             }
         }
         cout << endl;
@@ -320,51 +300,30 @@ void afficheMatriceAdjacente(t_graphe * target) {
 
 // Affichage de la matrice de valeurs
 void afficheMatriceValeurs(t_graphe * target) {
-    /*
-        Jusqu'à 10, on peur avoir un bel affichage condensé avec le nom des sommets
-        Au dela, on n'a plus le nom des sommets
-    */
-
+    
+    int fieldSize = 4;
     for (int x = -1; x < target->nbSommets; x++) {
         if (x == -1)
         {
-            cout << "  ";
+            cout << setfill(' ') << setw(fieldSize) << "";
         }
         else
         {
-            if (x < 10)
-            {
-                cout << x << " ";
-            }
-            else
-            {
-                cout << "+ ";
-            }
+            cout << setfill(' ') << setw(fieldSize) << x;
         }
     }
     cout << endl;
-
+    
     for (int x = 0; x < target->nbSommets; x++) {
-        if (x < 10)
-        {
-            cout << x << " ";
-        }
-        else
-        {
-            cout << "+ ";
-        }
+        
+        cout << setfill(' ') << setw(fieldSize) << x;
+        
         for (int y = 0; y < target->nbSommets; y ++) {
             if (target->MAdj[x][y] == true) {
-                cout << target->MVal[x][y]; // Problème si valeur > 9 ou < 0
-                if (y != target->nbSommets-1) {
-                    cout << ".";
-                }
+                cout << setfill(' ') << setw(fieldSize) << target->MVal[x][y];;
             }
-            else if (y == target->nbSommets-1) {
-                cout << ".";
-            }
-            else {
-                cout << "..";
+            else{
+                cout << setfill(' ') << setw(fieldSize) << ".";
             }
         }
         cout << endl;
@@ -699,7 +658,7 @@ void editDuration(t_graphe * graphe){
         int datePlusTard = dateAuPlusTard(graphe, *sortieS.begin());
         int nouvelleDateAuPlusTot = dateAuPlusTot(tmpGraphe, *sortieS.begin());
         
-        cout << "Verification de la faisabilité: " << endl;;
+        cout << "Verification de la faisabilite: " << endl;;
         cout << "- date au plus tard : " << datePlusTard << endl;
         cout << "- nouvelle date au plus tot: " << nouvelleDateAuPlusTot << endl;
         cout << "-> Resultat: ";
