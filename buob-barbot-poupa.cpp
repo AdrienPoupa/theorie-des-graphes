@@ -64,52 +64,7 @@ bool validation(t_graphe * graphe);
 
 // MAIN
 int main(){
-    /*
-
-     // Déclaration graphe
-     t_graphe * G = new t_graphe;
-
-     cout << "Generation a partir du fichier" << endl;
-     generateFromFile(G);
-
-     cout << "Matrice adjacente originale :" << endl;
-
-     //afficheMatriceAdjacente(G);
-
-     afficheCompletGraphe(G);
-
-     t_graphe * t = new t_graphe;
-
-     cout << "Transitivite :" << endl;
-     transitive(G, t, true);
-
-     bool valide = validation(G);
-
-     if (valide)
-     {
-     cout << "Le graphe a ete valide" << endl;
-     }
-     else
-     {
-     cout << "Le graphe n'a pas ete valide" << endl;
-     }
-
-     cout << "Rang" << endl;
-     affichageRang(rang(G));
-
-     map<int, int> dureeSommet;
-     cout << "Generation a partir du fichier" << endl;
-     dureeSommet = generateFromFileTask(G);
-
-     //    cout << "Matrice adjacente originale :" << endl;
-     //    afficheMatriceAdjacente(G);
-
-     cout << "Matrice complete :" << endl;
-     afficheCompletGraphe(G);
-
-     calendrierAuPlusTot(G, dureeSommet);
-     calendrierAuPlusTard(G, dureeSommet);*/
-
+    
     mainMenu();
 
     return 1;
@@ -334,8 +289,17 @@ void afficheMatriceValeurs(t_graphe * target) {
 
 // Itérateur permettant l'affichage propre d'un rang
 void affichageRang(map<int, int> rS) {
-    for (auto const elem: rS) {
-        cout << "sommet : "<< elem.first << " , rang : " << elem.second << endl;
+    if(rS.size() > 0){
+        cout << "Sommet |";
+        for(auto const elem: rS){
+            cout << setfill(' ') << setw(3) << elem.first;
+        }
+        cout << endl;
+        cout << "Rang   |";
+        for (auto const elem: rS) {
+            cout << setfill(' ') << setw(3) << elem.second;
+        }
+        cout << endl;
     }
 }
 
@@ -1036,7 +1000,7 @@ void mainMenu(){
                 transitive(graphe, tempTransitive, true);
                 break;
             case 4:{
-                transitive(graphe, tempTransitive, false);
+                transitive(graphe, tempTransitive, true);
                 bool res = aUnCircuit(tempTransitive);
                 if(res){
                     cout << "Le graphe a un circuit" << endl;
@@ -1048,7 +1012,10 @@ void mainMenu(){
             }
             case 5:{
                 map<int, int> rangs = rang(graphe);
-                affichageRang(rangs);
+                if(rangs.size() > 0){
+                    cout << "Recapitulatif: " << endl;
+                    affichageRang(rangs);
+                }
                 break;
             }
             case 6:
@@ -1099,7 +1066,9 @@ map<int, int> rang(t_graphe * graphe){
     else
     {
         for(int i = 0; i < graphe->nbSommets; i++){
+            cout << "Sommet : " << i;
             rangSommets[i] = calculRang(graphe, i);
+            cout << ", Rang: " << rangSommets[i] << endl;
         }
     }
 
@@ -1178,9 +1147,9 @@ void transitive(t_graphe * original, t_graphe * target, bool display) {
         {
             cout << "m^" << n <<" : " << endl;
             afficheMatriceAdjacente(m);
-
             cout << "transitive pour n = " << n << " : " << endl;
             afficheMatriceAdjacente(target);
+            cout << endl;
         }
     }
 }
