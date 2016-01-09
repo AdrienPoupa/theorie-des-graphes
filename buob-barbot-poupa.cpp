@@ -164,7 +164,7 @@ void addDeleteTask(t_graphe * graphe){
         else
         {
             // Pas de contraintes = entrées
-            cout << "Pas de contraintes ...";
+            cout << "Pas de contraintes ..." << endl;
         }
     }
     else
@@ -176,6 +176,12 @@ void addDeleteTask(t_graphe * graphe){
         cin >> choix;
 
         cout << "Tache a supprimer : " << choix << endl;
+
+        int nombreNouveauxSommets = graphe->nbSommets - 1;
+
+        // Création de la nouvelle matrice, copie de l'ancienne
+        generateMatriceVide(nouveauGraphe, nombreNouveauxSommets);
+        copieGrapheAvecSuppressionSommet(graphe, nouveauGraphe, choix);
     }
 
     // Mise à jour de l'adresse
