@@ -64,74 +64,33 @@ void transitive(t_graphe * original, t_graphe * target, bool display = false);
 bool validation(t_graphe * graphe);
 
 // MAIN
-int main(){
-    
+int main() {
+
     mainMenu();
 
     return 1;
 }
 
-void addDeleteTask(t_graphe * graphe){
+void addDeleteTask(t_graphe * graphe) {
     int choixUtilisateur;
 
     cout << "1. Ajout de tache" << endl;
     cout << "2. Suppression de tache" << endl;
     cout << "Choix :" << endl;
     cin >> choixUtilisateur;
-    
+
     t_graphe * nouveauGraphe = new t_graphe();
 
     if (choixUtilisateur == 1)
     {
-        int duree, contrainte;
-        string choix;
-        set<int> contrainteS = set<int>();
 
         cout << "Ajout de tache ..." << endl;
-
-        /*cout << "Saisie des contraintes" << endl;
-        cout << "Tapez 'O' pour saisir des contraintes, 'N' sinon :" << endl;
-        cin >> choix;*/
 
         int nombreNouveauxSommets = graphe->nbSommets + 1;
 
         // Création de la nouvelle matrice, copie de l'ancienne
         generateMatriceVide(nouveauGraphe, nombreNouveauxSommets);
         copieGrapheAvecAjoutSommet(graphe, nouveauGraphe);
-
-        /*if (choix == "O")
-        {
-            //extInitDuree[extInit] = duree;
-            do
-            {
-                cout << "Saisie de la contrainte, -1 pour arreter" << endl;
-                cin >> contrainte;
-
-                cout << "Contrainte saisie : " << contrainte << endl;
-                
-                // Ajout de la nouvelle contrainte dans la nouvelle colonne, si la contrainte est valide
-                if (contrainte < (nombreNouveauxSommets - 1) && contrainte != -1)
-                {
-                    contrainteS.insert(contrainte);
-                    nouveauGraphe->MAdj[contrainte][nombreNouveauxSommets - 1] = true;
-                    nouveauGraphe->MVal[contrainte][nombreNouveauxSommets - 1] = duree;
-                }
-
-            } while (contrainte != -1);
-        }
-        else
-        {
-            // Pas de contraintes = entrées
-            cout << "Pas de contraintes ..." << endl;
-        }*/
-        
-        /*cout << "Recapitulatif: " << endl;
-        cout << " - sommet: " << nombreNouveauxSommets - 1 << endl;
-        cout << " - duree: " << duree << endl;
-        cout << " - contraintes: ";
-        for(set<int>::iterator i = contrainteS.begin(); i != contrainteS.end(); i++){
-            cout << *(i) << (*i == *contrainteS.rbegin() ? "" : ", ");
-        }*/
         
         cout << "Numero de la nouvelle tache: " << nombreNouveauxSommets - 1 << endl;
         cout << endl;
@@ -152,11 +111,11 @@ void addDeleteTask(t_graphe * graphe){
         generateMatriceVide(nouveauGraphe, nombreNouveauxSommets);
         copieGrapheAvecSuppressionSommet(graphe, nouveauGraphe, choix);
     }
-    
+
     copieGraphe(nouveauGraphe, graphe);
 }
 
-void addDeleteConstraint(t_graphe * graphe){
+void addDeleteConstraint(t_graphe * graphe) {
     int choixUtilisateur, contrainte, sommet;
 
     t_graphe * workGraphe = new t_graphe();
@@ -230,7 +189,7 @@ void addDeleteConstraint(t_graphe * graphe){
         workGraphe->MAdj[contrainte][sommet] = false;
         workGraphe->MVal[contrainte][sommet] = 0;
     }
-    
+
     copieGraphe(workGraphe, graphe);
 }
 
@@ -258,9 +217,9 @@ void afficheMatriceAdjacente(t_graphe * target) {
     cout << endl;
 
     for (int x = 0; x < target->nbSommets; x++) {
-        
+
         cout << setfill(' ') << setw(fieldSize) << x;
-        
+
         for (int y = 0; y < target->nbSommets; y ++) {
             if (target->MAdj[x][y] == true) {
                 cout << setfill(' ') << setw(fieldSize) << "X";
@@ -275,7 +234,7 @@ void afficheMatriceAdjacente(t_graphe * target) {
 
 // Affichage de la matrice de valeurs
 void afficheMatriceValeurs(t_graphe * target) {
-    
+
     int fieldSize = 4;
     for (int x = -1; x < target->nbSommets; x++) {
         if (x == -1)
@@ -288,11 +247,11 @@ void afficheMatriceValeurs(t_graphe * target) {
         }
     }
     cout << endl;
-    
+
     for (int x = 0; x < target->nbSommets; x++) {
-        
+
         cout << setfill(' ') << setw(fieldSize) << x;
-        
+
         for (int y = 0; y < target->nbSommets; y ++) {
             if (target->MAdj[x][y] == true) {
                 cout << setfill(' ') << setw(fieldSize) << target->MVal[x][y];;
@@ -307,9 +266,9 @@ void afficheMatriceValeurs(t_graphe * target) {
 
 // Itérateur permettant l'affichage propre d'un rang
 void affichageRang(map<int, int> rS) {
-    if(rS.size() > 0){
+    if (rS.size() > 0) {
         cout << "Sommet |";
-        for(auto const elem: rS){
+        for (auto const elem: rS) {
             cout << setfill(' ') << setw(3) << elem.first;
         }
         cout << endl;
@@ -336,17 +295,17 @@ bool aUnCircuit(t_graphe * matriceTransitive) {
     return false;
 }
 
-int calculRang(t_graphe * graphe, int sommet){
+int calculRang(t_graphe * graphe, int sommet) {
 
     set<int> pred;
 
-    for(int i = 0; i < graphe->nbSommets; i++){
-        if(graphe->MAdj[i][sommet]){ // trouve predecesseur de sommet
+    for (int i = 0; i < graphe->nbSommets; i++) {
+        if (graphe->MAdj[i][sommet]) { // trouve predecesseur de sommet
             pred.insert(calculRang(graphe, i));
         }
     }
 
-    if(pred.size() == 0){
+    if (pred.size() == 0) {
         return 0;
 
     }
@@ -405,9 +364,9 @@ map<int, int> calendrierAuPlusTot(t_graphe * graphe) {
 }
 
 // Copie d'un graphe de l'original (argument 1 à l'argument 2, nouvelle variable)
-void copieGraphe(t_graphe * original, t_graphe * copie){
+void copieGraphe(t_graphe * original, t_graphe * copie) {
     copie->nbSommets = original->nbSommets;
-    
+
     generateMatriceVide(copie, copie->nbSommets);
 
     copie->MAdj = new bool * [copie->nbSommets];
@@ -425,7 +384,7 @@ void copieGraphe(t_graphe * original, t_graphe * copie){
 }
 
 // Copie du graphe en supprimant le sommet spécifié en 3ème argument
-void copieGrapheAvecSuppressionSommet(t_graphe * original, t_graphe * copie, int sommet){
+void copieGrapheAvecSuppressionSommet(t_graphe * original, t_graphe * copie, int sommet) {
     // Réduction du nombre de sommets
     copie->nbSommets = original->nbSommets - 1;
 
@@ -459,7 +418,7 @@ void copieGrapheAvecSuppressionSommet(t_graphe * original, t_graphe * copie, int
 }
 
 // Copie du graphe en ajoutant un sommet
-void copieGrapheAvecAjoutSommet(t_graphe * original, t_graphe * copie){
+void copieGrapheAvecAjoutSommet(t_graphe * original, t_graphe * copie) {
     // Incrémentation du nombre de sommets
     copie->nbSommets = original->nbSommets + 1;
 
@@ -622,7 +581,7 @@ void editDuration(t_graphe * graphe){
         saisieFail = false;
         cout << "Choix du sommet:" << endl;
         cin >> choiceSommet;
-        if(cin.fail()){
+        if (cin.fail()) {
             saisieFail = true;
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -634,46 +593,51 @@ void editDuration(t_graphe * graphe){
         saisieFail = false;
         cout << "Nouvelle duree: " << endl;
         cin >> nouvelleDuree;
-        if(cin.fail()){
+        if (cin.fail()) {
             saisieFail = true;
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
-    }while(saisieFail || nouvelleDuree < 0);
+    } while (saisieFail || nouvelleDuree < 0);
 
-    for(int i = 0; i < tmpGraphe->nbSommets; i++){
-        if(tmpGraphe->MAdj[choiceSommet][i])
+    for (int i = 0; i < tmpGraphe->nbSommets; i++) {
+        if (tmpGraphe->MAdj[choiceSommet][i])
             tmpGraphe->MVal[choiceSommet][i] = nouvelleDuree;
     }
 
 }
 
-void editeur(t_graphe * graphe){
+/*
+   Rassemble les fonctions d'édition
+   Permet de travailler sur une copie propre du graphe valide,
+   qu'on recopie dans le graphe de départ si les modifications sont validées
+*/
+void editeur(t_graphe * graphe) {
     // affichage menu d'options
     int choice = -1;
     bool hasModif = false;
     t_graphe * nouveauGraphe = new t_graphe();
     copieGraphe(graphe, nouveauGraphe);
-    
+
     do{
         do{
             cout << "Editeur: " << endl;
             cout << "1. Ajouter/Supprimer une tache" << endl;
             cout << "2. Ajouter/Supprimer une contrainte" << endl;
             cout << "3. Modifier une duree" << endl;
-            if(hasModif){
+            if (hasModif) {
                 cout << "4. Quitter et sauvegarder les modifications" << endl;
             }
             cout << "0. Quitter" << (hasModif ? " et annuler les modifications": "") << endl;
             cout << "Choix : " << endl;
             cin >> choice;
-            if(cin.fail()){
+            if (cin.fail()) {
                 cin.clear();
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
-        }while(choice < 0 && (choice > 3 || (choice > 4 && hasModif)));
+        } while (choice < 0 && (choice > 3 || (choice > 4 && hasModif)));
 
-        switch(choice){
+        switch(choice) {
             case 1: // ajouter/supprimer tâche
                 addDeleteTask(nouveauGraphe);
                 hasModif = true;
@@ -689,23 +653,23 @@ void editeur(t_graphe * graphe){
             default:
                 break;
         }
-        
-    }while(choice != 0 && (hasModif && choice != 4));
-    
-    
-    if(choice == 4){
+
+    } while (choice != 0 && (hasModif && choice != 4));
+
+
+    if (choice == 4) {
         //cout << "Validation des modifications: " << endl;
-        
+
         if (validation(nouveauGraphe))
         {
             cout << "f) ";
             set<int> sortieS = sortieGraphe(nouveauGraphe);
-            if(sortieS.size() == 1){
+            if (sortieS.size() == 1) {
                 int datePlusTard = dateAuPlusTard(graphe, *sortieS.begin());
                 int nouvelleDateAuPlusTot = dateAuPlusTot(nouveauGraphe, *sortieS.begin());
-                
+
                 cout << "faisabilite (date au plus tard: " << datePlusTard << ", nouvelle date au plus tot: " << nouvelleDateAuPlusTot << ") : ";
-                if(nouvelleDateAuPlusTot <= datePlusTard){
+                if (nouvelleDateAuPlusTot <= datePlusTard) {
                     cout << "OK !" << endl;
                     cout << "Le graphe est valide : votre modification est enregistree" << endl << endl;
                     copieGraphe(nouveauGraphe, graphe);
@@ -720,14 +684,14 @@ void editeur(t_graphe * graphe){
         {
             cout << "Votre modification entraine une corruption du graphe : elle n'est pas enregistree" << endl;
         }
-        
+
     }
 
     return;
 }
 
 // Récupération d'un set<int> d'entree du graphe
-set<int> entreeGraphe(t_graphe * graphe){
+set<int> entreeGraphe(t_graphe * graphe) {
     map<int, int> aretesEntrantes = map<int, int>();
     set<int> entrees = set<int>();
 
@@ -895,7 +859,7 @@ void generateFromFileTask(t_graphe * target, string filePath) {
 }
 
 // Génération de la matrice vide
-void generateMatriceVide(t_graphe * target, int nbSommets){
+void generateMatriceVide(t_graphe * target, int nbSommets) {
     target->nbSommets = nbSommets;
     target->MAdj = new bool * [target->nbSommets];
 
@@ -918,7 +882,7 @@ void generateMatriceVide(t_graphe * target, int nbSommets){
     }
 }
 
-void loadFromFile(t_graphe * graphe){
+void loadFromFile(t_graphe * graphe) {
     /**
      list of available files:
      - buob-barbot-poupa-test1.txt
@@ -942,7 +906,7 @@ void loadFromFile(t_graphe * graphe){
     };
 
     do {
-        cout << "Charger fichier: " << endl;
+        cout << "Charger fichier : " << endl;
         cout << "1. Annexe test 1" << endl;
         cout << "2. Annexe test 2" << endl;
         cout << "3. Annexe test 3" << endl;
@@ -951,15 +915,15 @@ void loadFromFile(t_graphe * graphe){
         cout << "6. Annexe test 6" << endl;
         cout << "7. Annexe test 7" << endl;
         cout << "8. Saisir chemin du fichier" << endl;
-        cout << "Choix: " << endl;
+        cout << "Choix : " << endl;
         cin >> fileChoice;
-    }while (fileChoice < 1 || fileChoice > 8);
+    } while (fileChoice < 1 || fileChoice > 8);
 
     string filePath;
-    if(fileChoice <= 7) {
+    if (fileChoice <= 7) {
         filePath = string(".") + string(SEPARATOR) + files[fileChoice-1];
     }
-    switch(fileChoice){
+    switch(fileChoice) {
         case 1:
         case 2:
         case 3:
@@ -977,13 +941,13 @@ void loadFromFile(t_graphe * graphe){
                 cout << "chemin de votre matrice: " << endl;
                 cin >> filePath;
                 test.open(filePath);
-                if(!test){
+                if (!test) {
                     cout << "chemin incorrect ..." << endl;
                     cin.clear();
                     cin.ignore(numeric_limits<streamsize>::max(), '\n');
                     filePath = "";
                 }
-            }while(!test);
+            } while (!test);
 
             test.close();
 
@@ -991,9 +955,9 @@ void loadFromFile(t_graphe * graphe){
             do{
                 cout << "S'agit-il d'un tableau de contraintes ? [O/n]" << endl;
                 cin >> isConstraint;
-            }while(isConstraint != 'n' && isConstraint != 'O');
+            } while (isConstraint != 'n' && isConstraint != 'O');
 
-            if(isConstraint == 'n'){
+            if (isConstraint == 'n') {
                 generateFromFile(graphe, filePath);
             }
             else{
@@ -1003,7 +967,7 @@ void loadFromFile(t_graphe * graphe){
     return;
 }
 
-void mainMenu(){
+void mainMenu() {
     cout << "-----------------------" << endl;
     cout << "| Theorie des graphes |" << endl;
     cout << "|     mini-projet     |" << endl;
@@ -1022,7 +986,7 @@ void mainMenu(){
         do{
             cout << "Menu:" << endl;
             cout << "1. Charger fichier" << endl;
-            if(fileLoaded){
+            if (fileLoaded) {
                 cout << "2. Afficher graphe" << endl;
                 cout << "3. Fermeture transitive" << endl;
                 cout << "4. Detection de circuit" << endl;
@@ -1034,9 +998,9 @@ void mainMenu(){
             cout << "0. Quitter le programme" << endl;
             cout << "Choix: " << endl;
             cin >> choice;
-        }while(choice < 0 || (fileLoaded && choice > 8) || (!fileLoaded && choice > 1));
+        } while (choice < 0 || (fileLoaded && choice > 8) || (!fileLoaded && choice > 1));
 
-        switch(choice){
+        switch(choice) {
             case 0:
                 cout << "Quitter !" << endl;
                 break;
@@ -1053,7 +1017,7 @@ void mainMenu(){
             case 4:{
                 transitive(graphe, tempTransitive, true);
                 bool res = aUnCircuit(tempTransitive);
-                if(res){
+                if (res) {
                     cout << "Le graphe a un circuit" << endl;
                 }
                 else{
@@ -1063,7 +1027,7 @@ void mainMenu(){
             }
             case 5:{
                 map<int, int> rangs = rang(graphe);
-                if(rangs.size() > 0){
+                if (rangs.size() > 0) {
                     cout << "Recapitulatif: " << endl;
                     affichageRang(rangs);
                 }
@@ -1074,7 +1038,7 @@ void mainMenu(){
                 calendrierAuPlusTard(graphe);
                 break;
             case 7:
-                if(validation(graphe)){
+                if (validation(graphe)) {
                     cout << " -> Graphe valide !" << endl;
                 }
                 else{
@@ -1088,13 +1052,13 @@ void mainMenu(){
                 cout << "menu inconnu ... Retour au menu !" << endl;
         }
         cout << endl << endl;
-    }while(choice != 0);
+    } while (choice != 0);
     return;
 }
 
 // Calcul du rang
 // todo : recursif
-map<int, int> rang(t_graphe * graphe){
+map<int, int> rang(t_graphe * graphe) {
     /*
      Calcul de rang
      On vérifie s'il n'y a pas de circuit
@@ -1116,7 +1080,7 @@ map<int, int> rang(t_graphe * graphe){
     }
     else
     {
-        for(int i = 0; i < graphe->nbSommets; i++){
+        for (int i = 0; i < graphe->nbSommets; i++) {
             cout << "Sommet : " << i;
             rangSommets[i] = calculRang(graphe, i);
             cout << ", Rang: " << rangSommets[i] << endl;
@@ -1127,7 +1091,7 @@ map<int, int> rang(t_graphe * graphe){
 }
 
 // Récupération d'un set<int> de sorties
-set<int> sortieGraphe(t_graphe * graphe){
+set<int> sortieGraphe(t_graphe * graphe) {
     map<int, int> aretesSortantes = map<int, int>();
     set<int> sorties = set<int>();
 
@@ -1206,7 +1170,7 @@ void transitive(t_graphe * original, t_graphe * target, bool display) {
 }
 
 // Valide le graphe en suivant les 5 points du sujet
-bool validation(t_graphe * graphe){
+bool validation(t_graphe * graphe) {
     cout << "Validation du graphe" << endl;
 
     bool valide = true;
@@ -1226,7 +1190,7 @@ bool validation(t_graphe * graphe){
     }
     else
     {
-        cout << "a) Il y a bien une unique entree" << endl;
+        cout << "a) OK : Il y a bien une unique entree" << endl;
     }
 
 
@@ -1245,11 +1209,8 @@ bool validation(t_graphe * graphe){
     }
     else
     {
-        cout << "b) Il y a bien une unique sortie" << endl;
+        cout << "b) OK : Il y a bien une unique sortie" << endl;
     }
-
-    /*cout << "Entree : " << entree << endl;
-    cout << "Sortie : " << sortie << endl;*/
 
     // c) Pas de circuit
     bool circuit = aUnCircuit(graphe);
@@ -1261,7 +1222,7 @@ bool validation(t_graphe * graphe){
     }
     else
     {
-        cout << "c) Il n'y a pas de circuit" << endl;
+        cout << "c) OK : Il n'y a pas de circuit" << endl;
     }
 
     // d) Il existe un chemin du point d’entrée à tout autre sommet
@@ -1270,7 +1231,7 @@ bool validation(t_graphe * graphe){
     // t reçoit la matrice d'adjacence du graphe transitif
     transitive(graphe, t, false);
 
-    if(entreeS.size() == 1){
+    if (entreeS.size() == 1) {
 
         bool dValide = true;
         int entree = *entreeS.begin();
@@ -1281,19 +1242,20 @@ bool validation(t_graphe * graphe){
             if (t->MAdj[entree][i] == false && i != entree)
             {
                 cout << "d) Erreur : Il n'existe pas un chemin du point d'entree a tout autre sommet" << endl;
-                valide = dValide = false;
+                valide = false;
+                dValide = false;
                 break;
             }
         }
 
         if (dValide)
         {
-            cout << "d) Il y a bien un chemin du point d'entree a tout autre sommet" << endl;
+            cout << "d) OK : Il y a bien un chemin du point d'entree a tout autre sommet" << endl;
         }
     }
 
     // e) Il existe un chemin de n’importe quel sommet au point de sortie
-    if(sortieS.size() == 1){
+    if (sortieS.size() == 1) {
 
         bool eValide = true;
         int sortie = *sortieS.begin();
@@ -1304,14 +1266,15 @@ bool validation(t_graphe * graphe){
             if (t->MAdj[i][sortie] == false && i != sortie)
             {
                 cout << "e) Erreur : Il n'existe pas un chemin de n'importe quel sommet au point de sortie" << endl;
-                valide = eValide = false;
+                valide = false;
+                eValide = false;
                 break;
             }
         }
 
         if (eValide)
         {
-            cout << "e) Il y a bien un chemin de n'importe quel sommet au point de sortie" << endl;
+            cout << "e) OK : Il y a bien un chemin de n'importe quel sommet au point de sortie" << endl;
         }
     }
 
