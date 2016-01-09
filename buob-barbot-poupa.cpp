@@ -73,17 +73,18 @@ int main(){
 void addDeleteTask(t_graphe * graphe){
     int choixUtilisateur;
 
-    t_graphe * nouveauGraphe = new t_graphe();
-
     cout << "1. Ajout de tache" << endl;
     cout << "2. Suppression de tache" << endl;
     cout << "Choix :" << endl;
     cin >> choixUtilisateur;
+    
+    t_graphe * nouveauGraphe = new t_graphe();
 
     if (choixUtilisateur == 1)
     {
         int duree, contrainte;
         string choix;
+        set<int> contrainteS = set<int>();
 
         cout << "Ajout de tache" << endl;
         cout << "Saisissez la duree de la tache :" << endl;
@@ -107,10 +108,11 @@ void addDeleteTask(t_graphe * graphe){
                 cin >> contrainte;
 
                 cout << "Contrainte saisie : " << contrainte << endl;
-
+                
                 // Ajout de la nouvelle contrainte dans la nouvelle colonne, si la contrainte est valide
                 if (contrainte < (nombreNouveauxSommets - 1) && contrainte != -1)
                 {
+                    contrainteS.insert(contrainte);
                     nouveauGraphe->MAdj[contrainte][nombreNouveauxSommets-1] = true;
                     nouveauGraphe->MVal[contrainte][nombreNouveauxSommets-1] = duree;
                 }
@@ -122,6 +124,15 @@ void addDeleteTask(t_graphe * graphe){
             // Pas de contraintes = entrées
             cout << "Pas de contraintes ..." << endl;
         }
+        
+        cout << "Recapitulatif: " << endl;
+        cout << " - sommet: " << nombreNouveauxSommets - 1 << endl;
+        cout << " - duree: " << duree << endl;
+        cout << " - contraintes: ";
+        for(set<int>::iterator i = contrainteS.begin(); i != contrainteS.end(); i++){
+            cout << *(i) << (*i == *contrainteS.rbegin() ? "" : ", ");
+        }
+        cout << endl << endl;
     }
     else
     {
@@ -139,19 +150,8 @@ void addDeleteTask(t_graphe * graphe){
         generateMatriceVide(nouveauGraphe, nombreNouveauxSommets);
         copieGrapheAvecSuppressionSommet(graphe, nouveauGraphe, choix);
     }
-
-    // Mise à jour de l'adresse si le graphe est valide
-    bool grapheValide = validation(nouveauGraphe);
-
-    if (grapheValide)
-    {
-        cout << "Le graphe est valide : votre modification est enregistree" << endl;
-        copieGraphe(nouveauGraphe, graphe);
-    }
-    else
-    {
-        cout << "Votre modification entraine une corruption du graphe : elle n'est pas enregistree" << endl;
-    }
+    
+    copieGraphe(nouveauGraphe, graphe);
 }
 
 void addDeleteConstraint(t_graphe * graphe){
@@ -200,19 +200,8 @@ void addDeleteConstraint(t_graphe * graphe){
         workGraphe->MAdj[contrainte][sommet] = false;
         workGraphe->MVal[contrainte][sommet] = 0;
     }
-
-    // Mise à jour de l'adresse si le graphe est valide
-    bool grapheValide = validation(workGraphe);
-
-    if (grapheValide)
-    {
-        cout << "Le graphe est valide : votre modification est enregistree" << endl;
-        copieGraphe(workGraphe, graphe);
-    }
-    else
-    {
-        cout << "Votre modification entraine une corruption du graphe : elle n'est pas enregistree" << endl;
-    }
+    
+    copieGraphe(workGraphe, graphe);
 }
 
 // L'affichage complet du graphe : matrices d'adjacence et de valeurs
@@ -388,6 +377,8 @@ map<int, int> calendrierAuPlusTot(t_graphe * graphe) {
 // Copie d'un graphe de l'original (argument 1 à l'argument 2, nouvelle variable)
 void copieGraphe(t_graphe * original, t_graphe * copie){
     copie->nbSommets = original->nbSommets;
+    
+    generateMatriceVide(copie, copie->nbSommets);
 
     copie->MAdj = new bool * [copie->nbSommets];
     copie->MVal = new int * [copie->nbSommets];
@@ -616,60 +607,82 @@ void editDuration(t_graphe * graphe){
             tmpGraphe->MVal[choiceSommet][i] = nouvelleDuree;
     }
 
-    afficheCompletGraphe(tmpGraphe);
-
-    set<int> sortieS = sortieGraphe(graphe);
-    if(sortieS.size() == 1){
-        int datePlusTard = dateAuPlusTard(graphe, *sortieS.begin());
-        int nouvelleDateAuPlusTot = dateAuPlusTot(tmpGraphe, *sortieS.begin());
-
-        cout << "Verification de la faisabilite: " << endl;;
-        cout << "- date au plus tard : " << datePlusTard << endl;
-        cout << "- nouvelle date au plus tot: " << nouvelleDateAuPlusTot << endl;
-        cout << "-> Resultat: ";
-        if(nouvelleDateAuPlusTot <= datePlusTard){
-            cout << "OK !" << endl;
-
-            copieGraphe(tmpGraphe, graphe);
-        }
-        else
-            cout << "Erreur !" << endl;
-    }
-    else{
-        cout << "Erreur: le graphe a 0 ou plus d'une sorties." << endl;
-    }
 }
 
 void editeur(t_graphe * graphe){
     // affichage menu d'options
     int choice = -1;
+    bool hasModif = false;
+    t_graphe * nouveauGraphe = new t_graphe();
+    copieGraphe(graphe, nouveauGraphe);
+    
     do{
         do{
             cout << "Editeur: " << endl;
             cout << "1. Ajouter/Supprimer une tache" << endl;
             cout << "2. Ajouter/Supprimer une contrainte" << endl;
             cout << "3. Modifier une duree" << endl;
-            cout << "0. Ne rien faire" << endl;
+            if(hasModif){
+                cout << "4. Quitter et sauvegarder les modifications" << endl;
+            }
+            cout << "0. Quitter" << (hasModif ? " et annuler les modifications": "") << endl;
             cout << "Choix : " << endl;
             cin >> choice;
-        }while(choice < 0 && choice > 3);
-
-        if(choice == 0) return;
+            if(cin.fail()){
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
+        }while(choice < 0 && (choice > 3 || (choice > 4 && hasModif)));
 
         switch(choice){
             case 1: // ajouter/supprimer tâche
-                addDeleteTask(graphe);
+                addDeleteTask(nouveauGraphe);
+                hasModif = true;
                 break;
             case 2: // ajouter/supprimer contrainte
-                addDeleteConstraint(graphe);
+                addDeleteConstraint(nouveauGraphe);
+                hasModif = true;
                 break;
             case 3: // modifier duree tâche.
-                editDuration(graphe);
+                editDuration(nouveauGraphe);
+                hasModif = true;
                 break;
             default:
-                return;
+                break;
         }
-    }while(choice != 0);
+        
+    }while(choice != 0 && (hasModif && choice != 4));
+    
+    
+    if(choice == 4){
+        //cout << "Validation des modifications: " << endl;
+        
+        if (validation(nouveauGraphe))
+        {
+            cout << "f) ";
+            set<int> sortieS = sortieGraphe(nouveauGraphe);
+            if(sortieS.size() == 1){
+                int datePlusTard = dateAuPlusTard(graphe, *sortieS.begin());
+                int nouvelleDateAuPlusTot = dateAuPlusTot(nouveauGraphe, *sortieS.begin());
+                
+                cout << "faisabilite (date au plus tard: " << datePlusTard << ", nouvelle date au plus tot: " << nouvelleDateAuPlusTot << ") : ";
+                if(nouvelleDateAuPlusTot <= datePlusTard){
+                    cout << "OK !" << endl;
+                    cout << "Le graphe est valide : votre modification est enregistree" << endl << endl;
+                    copieGraphe(nouveauGraphe, graphe);
+                    afficheCompletGraphe(graphe);
+                }
+                else
+                    cout << "Erreur !" << endl;
+            }
+            return;
+        }
+        else
+        {
+            cout << "Votre modification entraine une corruption du graphe : elle n'est pas enregistree" << endl;
+        }
+        
+    }
 
     return;
 }
