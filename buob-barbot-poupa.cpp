@@ -1215,9 +1215,6 @@ bool validation(t_graphe * graphe) {
         cout << "b) OK : Il y a bien une unique sortie" << endl;
     }
 
-    /*cout << "Entree : " << entree << endl;
-    cout << "Sortie : " << sortie << endl;*/
-
     // c) Pas de circuit
     bool circuit = aUnCircuit(graphe);
 
@@ -1248,7 +1245,8 @@ bool validation(t_graphe * graphe) {
             if (t->MAdj[entree][i] == false && i != entree)
             {
                 cout << "d) Erreur : Il n'existe pas un chemin du point d'entree a tout autre sommet" << endl;
-                valide = dValide = false;
+                valide = false;
+                dValide = false;
                 break;
             }
         }
@@ -1271,7 +1269,8 @@ bool validation(t_graphe * graphe) {
             if (t->MAdj[i][sortie] == false && i != sortie)
             {
                 cout << "e) Erreur : Il n'existe pas un chemin de n'importe quel sommet au point de sortie" << endl;
-                valide = eValide = false;
+                valide = false;
+                eValide = false;
                 break;
             }
         }
