@@ -120,7 +120,7 @@ void addDeleteTask(t_graphe * graphe){
 
     cout << "1. Ajout de tache" << endl;
     cout << "2. Suppression de tache" << endl;
-    cout << "Choix:" << endl;
+    cout << "Choix :" << endl;
     cin >> choixUtilisateur;
 
     if (choixUtilisateur == 1)
@@ -192,10 +192,71 @@ void addDeleteTask(t_graphe * graphe){
         cout << "Le graphe est valide : votre modification est enregistree" << endl;
         copieGraphe(nouveauGraphe, graphe);
     }
+    else
+    {
+        cout << "Votre modification entraine une corruption du graphe : elle n'est pas enregistree" << endl;
+    }
 }
 
 void addDeleteConstraint(t_graphe * graphe){
-    return;
+    int choixUtilisateur, contrainte, sommet;
+
+    t_graphe * workGraphe = new t_graphe();
+    copieGraphe(graphe, workGraphe);
+
+    cout << "Pour les sommets a contrainte unique, pensez a ajouter une nouvelle contrainte avant de la supprimer" << endl;
+    cout << "1. Ajout de contrainte" << endl;
+    cout << "2. Suppression de contrainte" << endl;
+    cout << "Choix :" << endl;
+    cin >> choixUtilisateur;
+
+    if (choixUtilisateur == 1)
+    {
+        cout << "Ajout de contrainte" << endl;
+        cout << "Saisissez la contrainte a ajouter :" << endl;
+        cin >> contrainte;
+
+        cout << "Saisissez le sommet pour cette nouvelle contrainte :" << endl;
+        cin >> sommet;
+
+        // On récupère la durée sur la colonne
+        for (int i = 0; i < workGraphe->nbSommets; i++)
+        {
+            // Si on est sur une valeur
+            if (workGraphe->MAdj[contrainte][i] == true)
+            {
+                workGraphe->MVal[contrainte][sommet] = workGraphe->MVal[contrainte][i];
+                break;
+            }
+        }
+
+        workGraphe->MAdj[contrainte][sommet] = true;
+    }
+    else
+    {
+        cout << "Suppression de contrainte" << endl;
+        cout << "Saisissez la contrainte a supprimer :" << endl;
+        cin >> contrainte;
+
+        cout << "Saisissez le sommet pour cette suppression :" << endl;
+        cin >> sommet;
+
+        workGraphe->MAdj[contrainte][sommet] = false;
+        workGraphe->MVal[contrainte][sommet] = 0;
+    }
+
+    // Mise à jour de l'adresse si le graphe est valide
+    bool grapheValide = validation(workGraphe);
+
+    if (grapheValide)
+    {
+        cout << "Le graphe est valide : votre modification est enregistree" << endl;
+        copieGraphe(workGraphe, graphe);
+    }
+    else
+    {
+        cout << "Votre modification entraine une corruption du graphe : elle n'est pas enregistree" << endl;
+    }
 }
 
 // L'affichage complet du graphe : matrices d'adjacence et de valeurs
