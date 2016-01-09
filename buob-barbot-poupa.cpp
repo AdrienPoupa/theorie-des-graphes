@@ -39,6 +39,7 @@ void copieGrapheAvecAjoutSommet(t_graphe * original, t_graphe * copie);
 int dateAuPlusTard(t_graphe * graphe, int sommet);
 int dateAuPlusTot(t_graphe * graphe, int sommet);
 map<int, int> demiDegreAdjacent(t_graphe * graphe);
+map<int, int> dureeSommet(t_graphe * graphe);
 
 void editDuration(t_graphe * graphe);
 void editeur(t_graphe * graphe);
@@ -86,13 +87,11 @@ void addDeleteTask(t_graphe * graphe){
         string choix;
         set<int> contrainteS = set<int>();
 
-        cout << "Ajout de tache" << endl;
-        cout << "Saisissez la duree de la tache :" << endl;
-        cin >> duree;
+        cout << "Ajout de tache ..." << endl;
 
-        cout << "Saisie des contraintes" << endl;
+        /*cout << "Saisie des contraintes" << endl;
         cout << "Tapez 'O' pour saisir des contraintes, 'N' sinon :" << endl;
-        cin >> choix;
+        cin >> choix;*/
 
         int nombreNouveauxSommets = graphe->nbSommets + 1;
 
@@ -100,7 +99,7 @@ void addDeleteTask(t_graphe * graphe){
         generateMatriceVide(nouveauGraphe, nombreNouveauxSommets);
         copieGrapheAvecAjoutSommet(graphe, nouveauGraphe);
 
-        if (choix == "O")
+        /*if (choix == "O")
         {
             //extInitDuree[extInit] = duree;
             do
@@ -114,8 +113,8 @@ void addDeleteTask(t_graphe * graphe){
                 if (contrainte < (nombreNouveauxSommets - 1) && contrainte != -1)
                 {
                     contrainteS.insert(contrainte);
-                    nouveauGraphe->MAdj[contrainte][nombreNouveauxSommets-1] = true;
-                    nouveauGraphe->MVal[contrainte][nombreNouveauxSommets-1] = duree;
+                    nouveauGraphe->MAdj[contrainte][nombreNouveauxSommets - 1] = true;
+                    nouveauGraphe->MVal[contrainte][nombreNouveauxSommets - 1] = duree;
                 }
 
             } while (contrainte != -1);
@@ -124,16 +123,18 @@ void addDeleteTask(t_graphe * graphe){
         {
             // Pas de contraintes = entrées
             cout << "Pas de contraintes ..." << endl;
-        }
+        }*/
         
-        cout << "Recapitulatif: " << endl;
+        /*cout << "Recapitulatif: " << endl;
         cout << " - sommet: " << nombreNouveauxSommets - 1 << endl;
         cout << " - duree: " << duree << endl;
         cout << " - contraintes: ";
         for(set<int>::iterator i = contrainteS.begin(); i != contrainteS.end(); i++){
             cout << *(i) << (*i == *contrainteS.rbegin() ? "" : ", ");
-        }
-        cout << endl << endl;
+        }*/
+        
+        cout << "Numero de la nouvelle tache: " << nombreNouveauxSommets - 1 << endl;
+        cout << endl;
     }
     else
     {
@@ -161,30 +162,43 @@ void addDeleteConstraint(t_graphe * graphe){
     t_graphe * workGraphe = new t_graphe();
     copieGraphe(graphe, workGraphe);
 
-    cout << "Pour les sommets a contrainte unique, pensez a ajouter une nouvelle contrainte avant de la supprimer" << endl;
-    cout << "1. Ajout de contrainte" << endl;
-    cout << "2. Suppression de contrainte" << endl;
-    cout << "Choix :" << endl;
-    cin >> choixUtilisateur;
-
+    //cout << "Pour les sommets a contrainte unique, pensez a ajouter une nouvelle contrainte avant de la supprimer" << endl;
+    do{
+        cout << "1. Ajout de contrainte" << endl;
+        cout << "2. Suppression de contrainte" << endl;
+        cout << "0. Annuler" << endl;
+        cout << "Choix :" << endl;
+        cin >> choixUtilisateur;
+    }while(choixUtilisateur < 0 || choixUtilisateur > 2);
+    
     if (choixUtilisateur == 1)
     {
         cout << "Ajout de contrainte" << endl;
+        cout << "Saisissez le sommet pour cette nouvelle contrainte :" << endl;
+        cin >> sommet;
+        
         cout << "Saisissez la contrainte a ajouter :" << endl;
         cin >> contrainte;
 
-        cout << "Saisissez le sommet pour cette nouvelle contrainte :" << endl;
-        cin >> sommet;
-
-        // On récupère la durée sur la colonne
-        for (int i = 0; i < workGraphe->nbSommets; i++)
-        {
-            // Si on est sur une valeur
-            if (workGraphe->MAdj[contrainte][i] == true)
-            {
-                workGraphe->MVal[contrainte][sommet] = workGraphe->MVal[contrainte][i];
-                break;
+        
+        
+        // le sommet a aucune contrainte : saisir duree
+        map<int, int> dS = dureeSommet(graphe);
+        set<int> contraintes;
+        int duree;
+        for(int i = 0; i < graphe->nbSommets; i++){
+            if(graphe->MAdj[i][contrainte]){
+                contraintes.insert(i);
             }
+        }
+        
+        if(contraintes.size() == 0){
+            cout << "Cette contrainte n'a pas de duree. Saisir une duree: " << endl;
+            cin >> duree;
+            workGraphe->MVal[contrainte][sommet] = duree;
+        }
+        else{
+            workGraphe->MVal[contrainte][sommet] = dS[contrainte];
         }
 
         workGraphe->MAdj[contrainte][sommet] = true;
@@ -192,11 +206,26 @@ void addDeleteConstraint(t_graphe * graphe){
     else
     {
         cout << "Suppression de contrainte" << endl;
-        cout << "Saisissez la contrainte a supprimer :" << endl;
-        cin >> contrainte;
-
+        
         cout << "Saisissez le sommet pour cette suppression :" << endl;
         cin >> sommet;
+        
+        set<int> contraintes;
+        for(int i = 0; i < graphe->nbSommets; i++){
+            if(graphe->MAdj[i][contrainte]){
+                contraintes.insert(i);
+            }
+        }
+        
+        cout << "Contraintes de ce sommet: ";
+        for(set<int>::iterator i = contraintes.begin(); i != contraintes.end(); i++){
+            cout << *(i) << (*i == *contraintes.rbegin() ? "" : ", ");
+        }
+        
+        cout << endl;
+        
+        cout << "Saisissez la contrainte a supprimer :" << endl;
+        cin >> contrainte;
 
         workGraphe->MAdj[contrainte][sommet] = false;
         workGraphe->MVal[contrainte][sommet] = 0;
@@ -553,28 +582,37 @@ map<int, int> demiDegreAdjacent(t_graphe * graphe) {
     return aretesEntrantes;
 }
 
-void editDuration(t_graphe * graphe){
-    // recuperer la duree d'execution pour chaque sommet
-
-    t_graphe * tmpGraphe = new t_graphe();
-    copieGraphe(graphe, tmpGraphe);
-
-    map<int, int> dureeSommet = map<int, int>();
+map<int, int> dureeSommet(t_graphe * graphe){
+    map <int, int> dS = map<int, int>();
     bool found;
     for(int i = 0; i < graphe->nbSommets; i++){
         found  = false;
         for(int j = 0; j < graphe->nbSommets; j++){
             if(graphe->MAdj[i][j]){
-                dureeSommet[i] = graphe->MVal[i][j];
+                dS[i] = graphe->MVal[i][j];
                 found = true;
                 break;
             }
         }
-        if(!found) dureeSommet[i] = 0;
+        if(!found) dS[i] = 0;
     }
 
+    return dS;
+
+}
+
+void editDuration(t_graphe * graphe){
+    // recuperer la duree d'execution pour chaque sommet
+
+    t_graphe * tmpGraphe = new t_graphe();
+    copieGraphe(graphe, tmpGraphe);
+    
+    afficheMatriceValeurs(graphe);
+
+    map<int, int> dS = dureeSommet(graphe);
+    
     cout << "Rappel des durees: " << endl;
-    for(auto const elem: dureeSommet){
+    for(auto const elem: dS){
         cout << "- sommet " << elem.first << " dure " << elem.second << endl;
     }
 
@@ -589,7 +627,7 @@ void editDuration(t_graphe * graphe){
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
-    }while (saisieFail || dureeSommet.find(choiceSommet) == dureeSommet.end());
+    }while (saisieFail || dS.find(choiceSommet) == dS.end());
 
     int nouvelleDuree;
     do{
