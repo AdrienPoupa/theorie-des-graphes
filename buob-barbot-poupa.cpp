@@ -663,10 +663,11 @@ void editeur(t_graphe * graphe) {
         if (validation(nouveauGraphe))
         {
             cout << "f) ";
-            set<int> sortieS = sortieGraphe(nouveauGraphe);
-            if (sortieS.size() == 1) {
-                int datePlusTard = dateAuPlusTard(graphe, *sortieS.begin());
-                int nouvelleDateAuPlusTot = dateAuPlusTot(nouveauGraphe, *sortieS.begin());
+            set<int> sortiesOriginal = sortieGraphe(graphe);
+            set<int> sortiesModif = sortieGraphe(nouveauGraphe);
+            if (sortiesOriginal.size() == 1 && sortiesModif.size() == 1) {
+                int datePlusTard = dateAuPlusTard(graphe, *sortiesOriginal.begin());
+                int nouvelleDateAuPlusTot = dateAuPlusTot(nouveauGraphe, *sortiesModif.begin());
 
                 cout << "faisabilite (date au plus tard: " << datePlusTard << ", nouvelle date au plus tot: " << nouvelleDateAuPlusTot << ") : ";
                 if (nouvelleDateAuPlusTot <= datePlusTard) {
