@@ -23,7 +23,7 @@ void addDeleteTask(t_graphe * graphe);
 void addDeleteConstraint(t_graphe * graphe);
 void afficheCompletGraphe(t_graphe * target);
 void afficheMatriceAdjacente(t_graphe * target);
-void afficheMatriceIncidence(t_graphe * target);
+void afficheMatriceValeurs(t_graphe * target);
 void affichageRang(map<int, int> rS);
 bool aUnCircuit(t_graphe * matriceTransitive);
 
@@ -184,18 +184,24 @@ void addDeleteTask(t_graphe * graphe){
         copieGrapheAvecSuppressionSommet(graphe, nouveauGraphe, choix);
     }
 
-    // Mise à jour de l'adresse
-    copieGraphe(nouveauGraphe, graphe);
+    // Mise à jour de l'adresse si le graphe est valide
+    bool grapheValide = validation(nouveauGraphe);
+
+    if (grapheValide)
+    {
+        cout << "Le graphe est valide : votre modification est enregistree" << endl;
+        copieGraphe(nouveauGraphe, graphe);
+    }
 }
 
 void addDeleteConstraint(t_graphe * graphe){
     return;
 }
 
-// L'affichage complet du graphe : matrices d'adjacence et d'incidence
+// L'affichage complet du graphe : matrices d'adjacence et de valeurs
 void afficheCompletGraphe(t_graphe * target) {
     afficheMatriceAdjacente(target);
-    afficheMatriceIncidence(target);
+    afficheMatriceValeurs(target);
 }
 
 // Affichage de la matrice adjacente
@@ -251,8 +257,8 @@ void afficheMatriceAdjacente(t_graphe * target) {
     }
 }
 
-// Affichage de la matrice d'incidence
-void afficheMatriceIncidence(t_graphe * target) {
+// Affichage de la matrice de valeurs
+void afficheMatriceValeurs(t_graphe * target) {
     /*
         Jusqu'à 10, on peur avoir un bel affichage condensé avec le nom des sommets
         Au dela, on n'a plus le nom des sommets
