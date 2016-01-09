@@ -565,7 +565,82 @@ map<int, int> demiDegreAdjacent(t_graphe * graphe) {
 }
 
 void editDuration(t_graphe * graphe){
-    return;
+    // recuperer la duree d'execution pour chaque sommet
+    
+    t_graphe * tmpGraphe = new t_graphe();
+    copieGraphe(graphe, tmpGraphe);
+    
+    map<int, int> dureeSommet = map<int, int>();
+    bool found;
+    for(int i = 0; i < graphe->nbSommets; i++){
+        found  = false;
+        for(int j = 0; j < graphe->nbSommets; j++){
+            if(graphe->MAdj[i][j]){
+                dureeSommet[i] = graphe->MVal[i][j];
+                found = true;
+                break;
+            }
+        }
+        if(!found) dureeSommet[i] = 0;
+    }
+    
+    cout << "Rappel des durees: " << endl;
+    for(auto const elem: dureeSommet){
+        cout << "- sommet " << elem.first << " dure " << elem.second << endl;
+    }
+    
+    int choiceSommet;
+    bool saisieFail;
+    do{
+        saisieFail = false;
+        cout << "Choix du sommet:" << endl;
+        cin >> choiceSommet;
+        if(cin.fail()){
+            saisieFail = true;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+    }while (saisieFail || dureeSommet.find(choiceSommet) == dureeSommet.end());
+    
+    int nouvelleDuree;
+    do{
+        saisieFail = false;
+        cout << "Nouvelle duree: " << endl;
+        cin >> nouvelleDuree;
+        if(cin.fail()){
+            saisieFail = true;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+    }while(saisieFail || nouvelleDuree < 0);
+    
+    for(int i = 0; i < tmpGraphe->nbSommets; i++){
+        if(tmpGraphe->MAdj[choiceSommet][i])
+            tmpGraphe->MVal[choiceSommet][i] = nouvelleDuree;
+    }
+    
+    afficheCompletGraphe(tmpGraphe);
+    
+    set<int> sortieS = sortieGraphe(graphe);
+    if(sortieS.size() == 1){
+        int datePlusTard = dateAuPlusTard(graphe, *sortieS.begin());
+        int nouvelleDateAuPlusTot = dateAuPlusTot(tmpGraphe, *sortieS.begin());
+        
+        cout << "Verification de la faisabilité: " << endl;;
+        cout << "- date au plus tard : " << datePlusTard << endl;
+        cout << "- nouvelle date au plus tot: " << nouvelleDateAuPlusTot << endl;
+        cout << "-> Resultat: ";
+        if(nouvelleDateAuPlusTot <= datePlusTard){
+            cout << "OK !" << endl;
+            
+            copieGraphe(tmpGraphe, graphe);
+        }
+        else
+            cout << "Erreur !" << endl;
+    }
+    else{
+        cout << "Erreur: le graphe a 0 ou plus d'une sorties." << endl;
+    }
 }
 
 void editeur(t_graphe * graphe){
@@ -764,6 +839,8 @@ void generateFromFileTask(t_graphe * target, string filePath) {
             }
         }
     }
+    
+    cout << "Rajout d'une entree et d'une sortie ..." << endl;
 
     fg.close();
 }
@@ -853,6 +930,9 @@ void loadFromFile(t_graphe * graphe){
                 test.open(filePath);
                 if(!test){
                     cout << "chemin incorrect ..." << endl;
+                    cin.clear();
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    filePath = "";
                 }
             }while(!test);
 
