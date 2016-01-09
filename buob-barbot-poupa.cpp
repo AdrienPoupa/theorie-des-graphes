@@ -556,6 +556,7 @@ map<int, int> demiDegreAdjacent(t_graphe * graphe) {
     return aretesEntrantes;
 }
 
+// Récupération de la durée du sommet
 map<int, int> dureeSommet(t_graphe * graphe){
     map <int, int> dS = map<int, int>();
     bool found;
@@ -575,8 +576,8 @@ map<int, int> dureeSommet(t_graphe * graphe){
 
 }
 
+// Récuperer la duree d'execution pour chaque sommet
 void editDuration(t_graphe * graphe){
-    // recuperer la duree d'execution pour chaque sommet
 
     t_graphe * tmpGraphe = new t_graphe();
     copieGraphe(graphe, tmpGraphe);
@@ -601,7 +602,7 @@ void editDuration(t_graphe * graphe){
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
-    } while (saisieFail || dureeSommet.find(choiceSommet) == dureeSommet.end());
+    }while (saisieFail || dS.find(choiceSommet) == dS.end());
 
     int nouvelleDuree;
     do{
@@ -619,7 +620,6 @@ void editDuration(t_graphe * graphe){
         if (tmpGraphe->MAdj[choiceSommet][i])
             tmpGraphe->MVal[choiceSommet][i] = nouvelleDuree;
     }
-
 }
 
 /*
