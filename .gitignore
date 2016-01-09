@@ -4,6 +4,9 @@ Build/
 mini-projet/
 mini-projet.xcodeproj
 mini-projet.build
+theorieDesGraphes/
+theorieDesGraphes.xcodeproj
+theorieDesGraphes.build
 DerivedData/
 bin/
 obj/
