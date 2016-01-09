@@ -269,7 +269,7 @@ void afficheCompletGraphe(t_graphe * target) {
 void afficheMatriceAdjacente(t_graphe * target) {
     /*
         Jusqu'à 10, on peur avoir un bel affichage condensé avec le nom des sommets
-        Au dela, on n'a plus le nom des sommets
+        Au dela, on n'a plus le nom des sommets mais des +
     */
 
     for (int x = -1; x < target->nbSommets; x++) {
