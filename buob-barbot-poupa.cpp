@@ -638,7 +638,82 @@ map<int, int> demiDegreAdjacent(t_graphe * graphe) {
 }
 
 void editDuration(t_graphe * graphe){
-    return;
+    // recuperer la duree d'execution pour chaque sommet
+    
+    t_graphe * tmpGraphe = new t_graphe();
+    copieGraphe(graphe, tmpGraphe);
+    
+    map<int, int> dureeSommet = map<int, int>();
+    bool found;
+    for(int i = 0; i < graphe->nbSommets; i++){
+        found  = false;
+        for(int j = 0; j < graphe->nbSommets; j++){
+            if(graphe->MAdj[i][j]){
+                dureeSommet[i] = graphe->MVal[i][j];
+                found = true;
+                break;
+            }
+        }
+        if(!found) dureeSommet[i] = 0;
+    }
+    
+    cout << "Rappel des durees: " << endl;
+    for(auto const elem: dureeSommet){
+        cout << "- sommet " << elem.first << " dure " << elem.second << endl;
+    }
+    
+    int choiceSommet;
+    bool saisieFail;
+    do{
+        saisieFail = false;
+        cout << "Choix du sommet:" << endl;
+        cin >> choiceSommet;
+        if(cin.fail()){
+            saisieFail = true;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+    }while (saisieFail || dureeSommet.find(choiceSommet) == dureeSommet.end());
+    
+    int nouvelleDuree;
+    do{
+        saisieFail = false;
+        cout << "Nouvelle duree: " << endl;
+        cin >> nouvelleDuree;
+        if(cin.fail()){
+            saisieFail = true;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+    }while(saisieFail || nouvelleDuree < 0);
+    
+    for(int i = 0; i < tmpGraphe->nbSommets; i++){
+        if(tmpGraphe->MAdj[choiceSommet][i])
+            tmpGraphe->MVal[choiceSommet][i] = nouvelleDuree;
+    }
+    
+    afficheCompletGraphe(tmpGraphe);
+    
+    set<int> sortieS = sortieGraphe(graphe);
+    if(sortieS.size() == 1){
+        int datePlusTard = dateAuPlusTard(graphe, *sortieS.begin());
+        int nouvelleDateAuPlusTot = dateAuPlusTot(tmpGraphe, *sortieS.begin());
+        
+        cout << "Verification de la faisabilité: " << endl;;
+        cout << "- date au plus tard : " << datePlusTard << endl;
+        cout << "- nouvelle date au plus tot: " << nouvelleDateAuPlusTot << endl;
+        cout << "-> Resultat: ";
+        if(nouvelleDateAuPlusTot <= datePlusTard){
+            cout << "OK !" << endl;
+            
+            copieGraphe(tmpGraphe, graphe);
+        }
+        else
+            cout << "Erreur !" << endl;
+    }
+    else{
+        cout << "Erreur: le graphe a 0 ou plus d'une sorties." << endl;
+    }
 }
 
 void editeur(t_graphe * graphe){
@@ -837,6 +912,8 @@ void generateFromFileTask(t_graphe * target, string filePath) {
             }
         }
     }
+    
+    cout << "Rajout d'une entree et d'une sortie ..." << endl;
 
     fg.close();
 }
@@ -926,6 +1003,9 @@ void loadFromFile(t_graphe * graphe){
                 test.open(filePath);
                 if(!test){
                     cout << "chemin incorrect ..." << endl;
+                    cin.clear();
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    filePath = "";
                 }
             }while(!test);
 
@@ -1015,14 +1095,20 @@ void mainMenu(){
                 calendrierAuPlusTard(graphe);
                 break;
             case 7:
-                validation(graphe);
+                if(validation(graphe)){
+                    cout << " -> Graphe valide !" << endl;
+                }
+                else{
+                    cout << " -> Graphe non valide !" << endl;
+                }
                 break;
             case 8:
                 editeur(graphe);
                 break;
             default:
-                cout << "Autre menus ..." << endl;
+                cout << "menu inconnu ... Retour au menu !" << endl;
         }
+        cout << endl << endl;
     }while(choice != 0);
     return;
 }
@@ -1145,41 +1231,16 @@ bool validation(t_graphe * graphe){
     bool valide = true;
 
     // a) 1 seul point d'entrée
-    map<int, int> aretesEntrantes = map<int, int>();
+    set<int> entreeS = entreeGraphe(graphe);
 
-    for (int x = 0; x < graphe->nbSommets; x++) {
-        aretesEntrantes[x] = 0;
-    }
-
-    for (int i = 0 ; i < graphe->nbSommets ; i++)
-    {
-        for (int j = 0 ; j < graphe->nbSommets ; j++)
-        {
-            if (graphe->MAdj[i][j] == true)
-            {
-                aretesEntrantes[j]++;
-            }
-        }
-    }
-
-    int compteurEntrees = 0, entree;
-
-    for (int x = 0; x < graphe->nbSommets; x++) {
-        if (aretesEntrantes[x] == 0) // Si on n'a que des 0 sur une colonne, c'est une entrée
-        {
-            compteurEntrees++;
-            entree = x; // On crée une variable contenant le numéro de l'entrée pour d)
-        }
-    }
-
-    if (compteurEntrees == 0)
+    if (entreeS.size() == 0)
     {
         cout << "a) Erreur : Il n'y a pas d'entree" << endl;
         valide = false;
     }
-    else if (compteurEntrees > 1)
+    else if (entreeS.size() > 1)
     {
-        cout << "a) Erreur : Il y a " << compteurEntrees << " entrees" << endl;
+        cout << "a) Erreur : Il y a " << entreeS.size() << " entrees" << endl;
         valide = false;
     }
     else
@@ -1189,41 +1250,16 @@ bool validation(t_graphe * graphe){
 
 
     // b) 1 seul point de sortie
-    map<int, int> aretesSortantes = map<int, int>();
+    set<int> sortieS = sortieGraphe(graphe);
 
-    for (int x = 0; x < graphe->nbSommets; x++) {
-        aretesSortantes[x] = 0;
-    }
-
-    for (int i = 0 ; i < graphe->nbSommets ; i++)
-    {
-        for (int j = 0 ; j < graphe->nbSommets ; j++)
-        {
-            if (graphe->MAdj[j][i] == true)
-            {
-                aretesSortantes[j]++;
-            }
-        }
-    }
-
-    int compteurSorties = 0, sortie;
-
-    for (int x = 0; x < graphe->nbSommets; x++) {
-        if (aretesSortantes[x] == 0) // Si on n'a que des 0 sur une ligne, c'est une sortie
-        {
-            compteurSorties++;
-            sortie = x; // On crée une variable contenant le numéro de la sortie pour d)
-        }
-    }
-
-    if (compteurSorties == 0)
+    if (sortieS.size() == 0)
     {
         cout << "b) Erreur : Il n'y a pas de sortie" << endl;
         valide = false;
     }
-    else if (compteurSorties > 1)
+    else if (sortieS.size() > 1)
     {
-        cout << "b) Erreur : Il y a " << compteurSorties << " sorties" << endl;
+        cout << "b) Erreur : Il y a " << sortieS.size() << " sorties" << endl;
         valide = false;
     }
     else
@@ -1248,45 +1284,56 @@ bool validation(t_graphe * graphe){
     }
 
     // d) Il existe un chemin du point d’entrée à tout autre sommet
-    bool dValide = true;
     // Création du graphe temporaire
     t_graphe * t = new t_graphe;
     // t reçoit la matrice d'adjacence du graphe transitif
     transitive(graphe, t, false);
-    // On vérifie qu'on a bien true sur la ligne d'entree (sauf lui-męme) pour avoir d)
-    for (int i = 0 ; i < t->nbSommets ; i++)
-    {
-        if (t->MAdj[entree][i] == false && i != entree)
+    
+    if(entreeS.size() == 1){
+        
+        bool dValide = true;
+        int entree = *entreeS.begin();
+        
+        // On vérifie qu'on a bien true sur la ligne d'entree (sauf lui-męme) pour avoir d)
+        for (int i = 0 ; i < t->nbSommets ; i++)
         {
-            cout << "d) Erreur : Il n'existe pas un chemin du point d'entree a tout autre sommet" << endl;
-            valide = dValide = false;
-            break;
+            if (t->MAdj[entree][i] == false && i != entree)
+            {
+                cout << "d) Erreur : Il n'existe pas un chemin du point d'entree a tout autre sommet" << endl;
+                valide = dValide = false;
+                break;
+            }
+        }
+        
+        if (dValide)
+        {
+            cout << "d) Il y a bien un chemin du point d'entree a tout autre sommet" << endl;
         }
     }
-
-    if (dValide)
-    {
-        cout << "d) Il y a bien un chemin du point d'entree a tout autre sommet" << endl;
-    }
-
+    
     // e) Il existe un chemin de n’importe quel sommet au point de sortie
-    bool eValide = true;
-    // On vérifie qu'on a bien true sur la colonne de sortie (sauf lui-męme) pour avoir e)
-    for (int i = 0 ; i < t->nbSommets ; i++)
-    {
-        if (t->MAdj[i][sortie] == false && i != sortie)
+    if(sortieS.size() == 1){
+        
+        bool eValide = true;
+        int sortie = *sortieS.begin();
+        
+        // On vérifie qu'on a bien true sur la colonne de sortie (sauf lui-męme) pour avoir e)
+        for (int i = 0 ; i < t->nbSommets ; i++)
         {
-            cout << "e) Erreur : Il n'existe pas un chemin de n'importe quel sommet au point de sortie" << endl;
-            valide = eValide = false;
-            break;
+            if (t->MAdj[i][sortie] == false && i != sortie)
+            {
+                cout << "e) Erreur : Il n'existe pas un chemin de n'importe quel sommet au point de sortie" << endl;
+                valide = eValide = false;
+                break;
+            }
+        }
+        
+        if (eValide)
+        {
+            cout << "e) Il y a bien un chemin de n'importe quel sommet au point de sortie" << endl;
         }
     }
-
-    if (eValide)
-    {
-        cout << "e) Il y a bien un chemin de n'importe quel sommet au point de sortie" << endl;
-    }
-
+    
     // Rien n'a été retourné jusque-là ? Le graphe est validé !
     return valide;
 }
