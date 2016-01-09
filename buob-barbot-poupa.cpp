@@ -3,6 +3,7 @@
 #include <set>
 #include <vector>
 #include <fstream>
+#include <limits>
 #ifdef _WIN32
 #define SEPARATOR "\\"
 #else
@@ -639,10 +640,10 @@ map<int, int> demiDegreAdjacent(t_graphe * graphe) {
 
 void editDuration(t_graphe * graphe){
     // recuperer la duree d'execution pour chaque sommet
-    
+
     t_graphe * tmpGraphe = new t_graphe();
     copieGraphe(graphe, tmpGraphe);
-    
+
     map<int, int> dureeSommet = map<int, int>();
     bool found;
     for(int i = 0; i < graphe->nbSommets; i++){
@@ -656,12 +657,12 @@ void editDuration(t_graphe * graphe){
         }
         if(!found) dureeSommet[i] = 0;
     }
-    
+
     cout << "Rappel des durees: " << endl;
     for(auto const elem: dureeSommet){
         cout << "- sommet " << elem.first << " dure " << elem.second << endl;
     }
-    
+
     int choiceSommet;
     bool saisieFail;
     do{
@@ -674,7 +675,7 @@ void editDuration(t_graphe * graphe){
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
     }while (saisieFail || dureeSommet.find(choiceSommet) == dureeSommet.end());
-    
+
     int nouvelleDuree;
     do{
         saisieFail = false;
@@ -686,26 +687,26 @@ void editDuration(t_graphe * graphe){
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
     }while(saisieFail || nouvelleDuree < 0);
-    
+
     for(int i = 0; i < tmpGraphe->nbSommets; i++){
         if(tmpGraphe->MAdj[choiceSommet][i])
             tmpGraphe->MVal[choiceSommet][i] = nouvelleDuree;
     }
-    
+
     afficheCompletGraphe(tmpGraphe);
-    
+
     set<int> sortieS = sortieGraphe(graphe);
     if(sortieS.size() == 1){
         int datePlusTard = dateAuPlusTard(graphe, *sortieS.begin());
         int nouvelleDateAuPlusTot = dateAuPlusTot(tmpGraphe, *sortieS.begin());
-        
+
         cout << "Verification de la faisabilité: " << endl;;
         cout << "- date au plus tard : " << datePlusTard << endl;
         cout << "- nouvelle date au plus tot: " << nouvelleDateAuPlusTot << endl;
         cout << "-> Resultat: ";
         if(nouvelleDateAuPlusTot <= datePlusTard){
             cout << "OK !" << endl;
-            
+
             copieGraphe(tmpGraphe, graphe);
         }
         else
@@ -912,7 +913,7 @@ void generateFromFileTask(t_graphe * target, string filePath) {
             }
         }
     }
-    
+
     cout << "Rajout d'une entree et d'une sortie ..." << endl;
 
     fg.close();
@@ -1288,12 +1289,12 @@ bool validation(t_graphe * graphe){
     t_graphe * t = new t_graphe;
     // t reçoit la matrice d'adjacence du graphe transitif
     transitive(graphe, t, false);
-    
+
     if(entreeS.size() == 1){
-        
+
         bool dValide = true;
         int entree = *entreeS.begin();
-        
+
         // On vérifie qu'on a bien true sur la ligne d'entree (sauf lui-męme) pour avoir d)
         for (int i = 0 ; i < t->nbSommets ; i++)
         {
@@ -1304,19 +1305,19 @@ bool validation(t_graphe * graphe){
                 break;
             }
         }
-        
+
         if (dValide)
         {
             cout << "d) Il y a bien un chemin du point d'entree a tout autre sommet" << endl;
         }
     }
-    
+
     // e) Il existe un chemin de n’importe quel sommet au point de sortie
     if(sortieS.size() == 1){
-        
+
         bool eValide = true;
         int sortie = *sortieS.begin();
-        
+
         // On vérifie qu'on a bien true sur la colonne de sortie (sauf lui-męme) pour avoir e)
         for (int i = 0 ; i < t->nbSommets ; i++)
         {
@@ -1327,13 +1328,13 @@ bool validation(t_graphe * graphe){
                 break;
             }
         }
-        
+
         if (eValide)
         {
             cout << "e) Il y a bien un chemin de n'importe quel sommet au point de sortie" << endl;
         }
     }
-    
+
     // Rien n'a été retourné jusque-là ? Le graphe est validé !
     return valide;
 }
