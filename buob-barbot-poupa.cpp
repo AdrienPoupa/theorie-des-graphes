@@ -601,7 +601,7 @@ void editDuration(t_graphe * graphe){
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
-    } while (saisieFail || dureeSommet.find(choiceSommet) == dureeSommet.end());
+    } while (saisieFail || dS.find(choiceSommet) == dS.end());
 
     int nouvelleDuree;
     do{
