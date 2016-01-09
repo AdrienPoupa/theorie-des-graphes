@@ -108,26 +108,7 @@ int main(){
      calendrierAuPlusTot(G, dureeSommet);
      calendrierAuPlusTard(G, dureeSommet);*/
 
-    //mainMenu();
-
-    t_graphe * ancienGraphe = new t_graphe;
-    //t_graphe * nouveauGraphe = new t_graphe;
-
-    generateFromFileTask(ancienGraphe, "buob-barbot-poupa-test7.txt");
-
-    /*int nombreNouveauxSommets = ancienGraphe->nbSommets + 1;
-
-    generateMatriceVide(nouveauGraphe, nombreNouveauxSommets);
-    copieGrapheAvecAjoutSommet(ancienGraphe, nouveauGraphe);*/
-
-    cout << "Ancien" << endl;
-    afficheCompletGraphe(ancienGraphe);
-    //cout << "Nouveau" << endl;
-    //afficheCompletGraphe(nouveauGraphe);
-
-    addDeleteTask(ancienGraphe);
-
-    //afficheCompletGraphe(ancienGraphe);
+    mainMenu();
 
     return 1;
 }
@@ -135,7 +116,7 @@ int main(){
 void addDeleteTask(t_graphe * graphe){
     int choixUtilisateur;
 
-    t_graphe * nouveauGraphe = new t_graphe;
+    t_graphe * nouveauGraphe = new t_graphe();
 
     cout << "1. Ajout de tache" << endl;
     cout << "2. Suppression de tache" << endl;
@@ -198,10 +179,7 @@ void addDeleteTask(t_graphe * graphe){
     }
 
     // Mise à jour de l'adresse
-    delete graphe;
-    graphe = nouveauGraphe;
-
-    afficheCompletGraphe(graphe);
+    copieGraphe(nouveauGraphe, graphe);
 }
 
 void addDeleteConstraint(t_graphe * graphe){
@@ -404,7 +382,7 @@ map<int, int> calendrierAuPlusTot(t_graphe * graphe) {
     for (auto const elem: datesSommet) {
         cout << "sommet: " << elem.first << ", date au plus tot : " << elem.second << endl;
     }
-    
+
     cout << endl;
 
     return datesSommet;
