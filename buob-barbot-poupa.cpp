@@ -28,13 +28,13 @@ void affichageRang(map<int, int> rS);
 bool aUnCircuit(t_graphe * matriceTransitive);
 
 int calculRang(t_graphe * graphe, int sommet);
-map<int, int> calendrierAuPlusTard(t_graphe * graphe, map<int, int> dureeSommet);
-map<int, int> calendrierAuPlusTot(t_graphe * graphe, map<int, int> dureeSommet);
+map<int, int> calendrierAuPlusTard(t_graphe * graphe);
+map<int, int> calendrierAuPlusTot(t_graphe * graphe);
 void copieGraphe(t_graphe * original, t_graphe * copie);
 void copieGrapheAvecSuppressionSommet(t_graphe * original, t_graphe * copie, int sommet);
 
-int dateAuPlusTard(t_graphe * graphe, int sommet, map<int, int> dureeSommet);
-int dateAuPlusTot(t_graphe * graphe, int sommet, map<int, int> dureeSommet);
+int dateAuPlusTard(t_graphe * graphe, int sommet);
+int dateAuPlusTot(t_graphe * graphe, int sommet);
 map<int, int> demiDegreAdjacent(t_graphe * graphe);
 
 void editDuration(t_graphe * graphe);
@@ -45,7 +45,7 @@ int findFirstWhereEntier(map<int, int> m, int v);
 
 void generateMatriceVide(t_graphe * target, int nbSommets);
 void generateFromFile(t_graphe * target, string filePath);
-map<int, int> generateFromFileTask(t_graphe * target, string filePath);
+void generateFromFileTask(t_graphe * target, string filePath);
 
 void loadFromFile(t_graphe * graphe);
 
@@ -273,45 +273,50 @@ int calculRang(t_graphe * graphe, int sommet){
 }
 
 // Affiche le calendrier au plus tard, en se basant sur dateAuPlusTard
-map<int, int> calendrierAuPlusTard(t_graphe * graphe, map<int, int> dureeSommet) {
+map<int, int> calendrierAuPlusTard(t_graphe * graphe) {
 
     // Récupération et affichage des rangs
     map<int, int> rangS = rang(graphe);
-    affichageRang(rangS);
+    //affichageRang(rangS);
 
     // Initialisation du tableau des dates des sommets
     map<int, int> datesSommet = map<int, int>();
 
     // Pour chaque sommet, on calcule sa date au plus tard
     for (auto const elem: rangS) {
-        datesSommet[elem.first] = dateAuPlusTard(graphe, elem.first, dureeSommet);
+        datesSommet[elem.first] = dateAuPlusTard(graphe, elem.first);
     }
 
+    cout << "Calendrier au plus tard: " << endl;
     for (auto const elem: datesSommet) {
         cout << "sommet: " << elem.first << ", date au plus tard : " << elem.second << endl;
     }
+    cout << endl;
 
     return datesSommet;
 }
 
 // Affiche le calendrier au plus tôt, en se basant sur dateAuPlusTot
-map<int, int> calendrierAuPlusTot(t_graphe * graphe, map<int, int> dureeSommet) {
+map<int, int> calendrierAuPlusTot(t_graphe * graphe) {
 
     // Récupération et affichage des rangs
     map<int, int> rangS = rang(graphe);
-    affichageRang(rangS);
+    //affichageRang(rangS);
 
     // Initialisation du tableau des dates des sommets
     map<int, int> datesSommet = map<int, int>();
 
     // pour chaque sommet, on calcule sa date au plus tot
     for (auto const elem: rangS) {
-        datesSommet[elem.first] = dateAuPlusTot(graphe, elem.first, dureeSommet);
+        datesSommet[elem.first] = dateAuPlusTot(graphe, elem.first);
     }
 
+    cout << "Calendrier au plus tot: " << endl;
     for (auto const elem: datesSommet) {
         cout << "sommet: " << elem.first << ", date au plus tot : " << elem.second << endl;
     }
+    
+    cout << endl;
 
     return datesSommet;
 }
@@ -370,7 +375,7 @@ void copieGrapheAvecSuppressionSommet(t_graphe * original, t_graphe * copie, int
 
 // Calcul de la date au plus tard
 // Arguments : graphe, sommet dont on recherche la date, map de la durée de tous les sommets
-int dateAuPlusTard(t_graphe * graphe, int sommet, map<int, int> dureeSommet) {
+int dateAuPlusTard(t_graphe * graphe, int sommet) {
 
     // Date au plus tard = min(dateAuPlusTard(successeurs)) - dureeSommet[sommet]
     // On cherche les successeurs
@@ -383,12 +388,12 @@ int dateAuPlusTard(t_graphe * graphe, int sommet, map<int, int> dureeSommet) {
     // selectionner le min de succ
     set<int> dateSucc = set<int>();
     for (auto const elem: succ) {
-        dateSucc.insert(dateAuPlusTard(graphe, elem, dureeSommet) - dureeSommet[sommet]);
+        dateSucc.insert(dateAuPlusTard(graphe, elem) - graphe->MVal[sommet][elem]);
     }
 
     if (dateSucc.empty())
     {
-        return dateAuPlusTot(graphe, sommet, dureeSommet);
+        return dateAuPlusTot(graphe, sommet);
     }
     else
     {
@@ -398,7 +403,7 @@ int dateAuPlusTard(t_graphe * graphe, int sommet, map<int, int> dureeSommet) {
 
 // Calcul de la date au plus tôt
 // Arguments : graphe, sommet dont on recherche la date, map de la durée de tous les sommets
-int dateAuPlusTot(t_graphe * graphe, int sommet, map<int, int> dureeSommet) {
+int dateAuPlusTot(t_graphe * graphe, int sommet) {
 
     // Date au plus tot = max(date au plus tot predecesseurs + duree predecesseur)
     // Recherche des sommets predecesseurs
@@ -415,7 +420,7 @@ int dateAuPlusTot(t_graphe * graphe, int sommet, map<int, int> dureeSommet) {
     // Sélectionner le max de datePred
     set<int> datePred = set<int>();
     for (auto const elem: pred) {
-        datePred.insert(dureeSommet[elem] + dateAuPlusTot(graphe, elem, dureeSommet));
+        datePred.insert(graphe->MVal[elem][sommet] + dateAuPlusTot(graphe, elem));
     }
 
     if (datePred.empty())
@@ -567,7 +572,7 @@ void generateFromFile(t_graphe * target, string filePath) {
 
 // Insertion des donnees dans notre structure de données
 // a partir du fichier de graphe ayant des contraintes
-map<int, int> generateFromFileTask(t_graphe * target, string filePath) {
+void generateFromFileTask(t_graphe * target, string filePath) {
     // Lecture du graphe sur fichier
     ifstream fg (filePath);
 
@@ -657,8 +662,6 @@ map<int, int> generateFromFileTask(t_graphe * target, string filePath) {
     }
 
     fg.close();
-
-    return extInitDuree;
 }
 
 // Génération de la matrice vide
@@ -831,8 +834,8 @@ void mainMenu(){
                 break;
             }
             case 6:
-                // todo: rework calendrierAuPlusTard(graphe);
-                // todo: rework calendrierAuPlusTot(graphe);
+                calendrierAuPlusTot(graphe);
+                calendrierAuPlusTard(graphe);
                 break;
             case 7:
                 validation(graphe);
