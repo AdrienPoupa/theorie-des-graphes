@@ -142,8 +142,6 @@ void addDeleteConstraint(t_graphe * graphe) {
     if (choixUtilisateur == 1)
     {
         cout << "Ajout de contrainte" << endl;
-        cout << "Saisissez la contrainte a ajouter :" << endl;
-        cin >> contrainte;
 
         cout << "Saisissez le sommet pour cette nouvelle contrainte :" << endl;
         cin >> sommet;
